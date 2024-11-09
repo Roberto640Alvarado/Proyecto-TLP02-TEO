@@ -19,7 +19,7 @@ t_CLOSE_PAREN = r'\)'
 t_END_OF_STATEMENT = r';'
 t_OPERATOR = r'[+\-*/=<>|&]'
 
-#Reglas de expresión regular con funciones para tokens complejos
+#Reglas de expresión regular
 def t_KEYWORD(t):
     r'\b(int|float|char|double|if|else|while|for|void|switch|case|break|return|struct|typedef|sizeof|do|const|enum)\b'
     t.type = 'KEYWORD'
@@ -48,7 +48,7 @@ def t_CHARACTER(t):
 def t_COMMENT(t):
     r'//.*|/\*[\s\S]*?\*/'
     t.type = 'COMMENT'
-    # Actualizar el número de línea para comentarios multilínea
+    #Actualizar el número de línea para comentarios multilínea
     t.lexer.lineno += t.value.count('\n')
     return t
 
@@ -69,6 +69,15 @@ def t_error(t):
 #Construir el lexer
 lexer = lex.lex()
 
+#Función para obtener el nivel de anidación en formato de texto
+def get_scope_level(scope_level):
+    if scope_level == 0:
+        return "Global"
+    elif scope_level == 1:
+        return "Bloque"
+    else:
+        return f"Anidado (Nivel {scope_level - 1})"
+
 #Función para tokenizar el código
 def tokenize(source_code):
     global currentScopeLevel
@@ -80,22 +89,23 @@ def tokenize(source_code):
             currentScopeLevel += 1
         elif tok.type == 'BLOCK_END':
             currentScopeLevel -= 1
-        tokens.append((tok.value, tok.type, currentScopeLevel, tok.lineno))
+        tokens.append((tok.value, tok.type, get_scope_level(currentScopeLevel), tok.lineno))
     
     return tokens
 
-#Función para imprimir la tabla de tokens
+#Función para imprimir la tabla de tokens con ID numérico y ámbito
 def print_tokens(tokens):
     print("\n<<<<<<<<<<<<<<<<<<<<<< Tabla de Tokens >>>>>>>>>>>>>>>>>>>>>>>")
-    headers = ["Valor", "Tipo", "Ámbito", "Línea"]
-    formatted_data = [[t[0], t[1], t[2], t[3]] for t in tokens]
+    headers = ["ID", "Valor", "Tipo", "Ámbito", "Línea"]
+    formatted_data = [[idx + 1, t[0], t[1], t[2], t[3]] for idx, t in enumerate(tokens)]
     print(tabulate(formatted_data, headers, tablefmt="fancy_grid"))
 
 #Función para imprimir la tabla de errores
 def print_error_tokens(error_tokens):
     print("\n<<<<<<<<<<<<<<<<<<<<<< Tabla de Errores >>>>>>>>>>>>>>>>>>>>>>>")
-    headers = ["Valor", "Descripción", "Línea"]
-    print(tabulate(error_tokens, headers, tablefmt="fancy_grid"))
+    headers = ["ID", "Valor", "Descripción", "Línea"]
+    formatted_data = [[idx + 1, e[0], e[1], e[2]] for idx, e in enumerate(error_tokens)]
+    print(tabulate(formatted_data, headers, tablefmt="fancy_grid"))
 
 #Lee el código fuente desde un archivo
 with open("test.c", "r") as file:
@@ -104,4 +114,5 @@ with open("test.c", "r") as file:
 
 print_tokens(tokens)
 print_error_tokens(error_tokens)
+
 
