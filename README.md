@@ -2,4 +2,7 @@
 
 ```
 pip install ply
+
+pip install tabulate termcolor
+
 ````
