@@ -1,12 +1,19 @@
 # ------------------------------------------------------------
-# Lexer y parser para C #Equipo 
+# Lexer y parser para C #Equipo
 # ------------------------------------------------------------
 import ply.lex as lex
-from ll1_tables import tabla_variables  #tablas LL(1)
-from terminals import *  #tokens y reglas de expresión regular
+from ll1_tables import tabla_variables, tabla_comentarios 
+from terminals import *  #Tokens y reglas de expresión regular
 from non_terminals import *  #Los no terminales
 from tabulate import tabulate
 from termcolor import colored
+
+#Tablas LL1 
+tablas_ll1 = {
+    "tabla_variables": tabla_variables,
+    "tabla_comentarios": tabla_comentarios,
+    
+}
 
 stack = ['eof', 0]
 
@@ -25,7 +32,7 @@ def print_tokens_table(tokens):
     table = tabulate(formatted_data, headers, tablefmt="fancy_grid")
     print(colored(table, "green"))
 
-#Funcion que realiza el análisis sintáctico
+#Función que realiza el análisis sintáctico
 def miParser(nombre_archivo):
     try:
         with open(nombre_archivo, 'r') as f:
@@ -52,7 +59,7 @@ def miParser(nombre_archivo):
 
         print("\n<<<<<<<<<<<<<<<<<<<<<< PROCESO DE PARSER >>>>>>>>>>>>>>>>>>>>>>>")
         while True:
-            print(f"Token actual: {tok.type}, Pila: {stack}")  #Mensaje de depuración
+            print(f"Token actual: {tok.type}, Pila: {stack}")  #Mensaje de depuración --> para ver el proceso del parser
             if x == tok.type and x == 'eof':
                 print("Cadena terminada exitosamente")
                 return
@@ -61,13 +68,21 @@ def miParser(nombre_archivo):
                     stack.pop()
                     x = stack[-1]
                     tok = lexer.token()
+                elif x in ['comentario', 'comentario_bloque'] and x == tok.type:
+                    #Si el token es un comentario (simple o bloque), simplemente lo elimina de la pila
+                    stack.pop()
+                    tok = lexer.token()
                 elif x in tokens and x != tok.type:
                     print(f"Error: se esperaba {x} pero se encontró {tok.type}")
                     print(f"En la posición: {tok.lexpos}")
                     print("Pila actual:", stack)
                     return
                 elif x not in tokens:                
-                    celda = buscar_en_tabla(x, tok.type, tabla_variables)
+                    celda = None
+                    for nombre_tabla, tabla in tablas_ll1.items():
+                        celda = buscar_en_tabla(x, tok.type, tabla)
+                        if celda is not None:
+                            break
                     if celda is None:
                         print(f"Error: NO se esperaba {tok.type}")
                         print(f"En posición: {tok.lexpos}")                    
@@ -80,6 +95,7 @@ def miParser(nombre_archivo):
         print(f"El archivo '{nombre_archivo}' no se encontró.")
     except Exception as e:
         print(f"Ocurrió un error: {e}")
+
 
 def buscar_en_tabla(no_terminal, terminal, tabla):
     for i in range(len(tabla)):

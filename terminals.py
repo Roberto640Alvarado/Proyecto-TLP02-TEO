@@ -63,11 +63,15 @@ def t_comentario(t):
     return t
 
 def t_comentario_bloque(t):
-    r'\/\*(.|\n)*\*\/'
+    r'\/\*(.|\n)*?\*\/'
+    return t
+
 
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
+
+
 
 #Ignora espacios y tabs
 t_ignore = ' \t'

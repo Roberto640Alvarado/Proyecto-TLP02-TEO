@@ -1,6 +1,12 @@
-int x, y;         
-float z = 3.14;   
-char c;
+int x, y, z, c;         
+float pi = 3.14;
+char letter = 'a';
 
-x = 1;
-y= 10;
+/* Este es un comentario
+   multilinea que describe 
+   una operación */
+
+c = c - 5;
+/**/
+
+// Este es un comentario de una sola línea
