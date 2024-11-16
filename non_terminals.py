@@ -10,3 +10,6 @@ E = 5
 T = 6
 T_PRIME = 7
 
+COND = 5    #Condiciones (expresiones booleanas)
+COND_PRIME = 6  #Términos booleanos adicionales
+

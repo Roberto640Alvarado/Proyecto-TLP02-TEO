@@ -5,7 +5,7 @@ tokens = (
     'NUMBER', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'LPAREN', 'RPAREN',
     'keyword', 'identificador', 'inicioBloque', 'finBloque', 'finInstruccion',
     'asignacion', 'comentario', 'comentario_bloque', 'cadena', 'coma', 'eof',
-    'int', 'float', 'char', 'char_literal'
+    'int', 'float', 'char', 'char_literal', 'GREATER', 'LESS', 'if', 'else'
 )
 
 #Reglas de expresiones regulares para tokens simples
@@ -21,6 +21,8 @@ t_finInstruccion = r'\;'
 t_asignacion = r'\='
 t_coma = r'\,'
 t_eof = r'\$'
+t_GREATER = r'>'
+t_LESS = r'<'
 
 def t_int(t):
     r'(int)'
@@ -47,11 +49,7 @@ def t_char_literal(t):
     return t
 
 def t_keyword(t):
-    r'(return)|(if)|(else)|(do)|(while)|(for)|(void)'
-    return t
-
-def t_identificador(t):
-    r'([a-z]|[A-Z]|_)([a-z]|[A-Z]|\d|_)*'
+    r'(return)|(do)|(while)|(for)|(void)'
     return t
 
 def t_cadena(t):
@@ -64,6 +62,7 @@ def t_comentario(t):
 
 def t_comentario_bloque(t):
     r'\/\*(.|\n)*?\*\/'
+    t.lexer.lineno += t.value.count('\n')  
     return t
 
 
@@ -71,6 +70,17 @@ def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
+def t_if(t):
+    r'if'
+    return t
+
+def t_else(t):
+    r'else'
+    return t
+
+def t_identificador(t):
+    r'([a-zA-Z_][a-zA-Z0-9_]*)'
+    return t
 
 
 #Ignora espacios y tabs

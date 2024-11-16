@@ -44,15 +44,50 @@ tabla_variables = [
     [7, 'RPAREN', []]                   #T' -> ε para finalizar con paréntesis
    
 ]
+
 tabla_comentarios = [ #Tabla LL(1) de producciones para comentarios
-    #Producción para S: punto de entrada para comentarios (una línea o bloque)
-    [0, 'comentario', [1, 0]],         #Maneja comentarios de una línea y continúa con otras producciones
-    [0, 'comentario_bloque', [2, 0]],  #Maneja comentarios multilínea y continúa con otras producciones
-    [0, 'eof', ['eof']],               #Fin del archivo
+    #Producción principal para manejar comentarios
+    [0, 'comentario', [1, 0]],          #Maneja un comentario de una línea y continúa
+    [0, 'comentario_bloque', [2, 0]],   #Maneja un comentario bloque y continúa
+    [0, 'eof', ['eof']],                #Permite terminar directamente con eof
 
-    #Producción para A' (comentarios de una línea)
-    [1, 'comentario', ['comentario']],  #Solo acepta el token de un comentario simple
+    #Producción para manejar el token 'comentario'
+    [1, 'comentario', ['comentario']],  #Consume el token 'comentario'
+    [1, 'eof', ['eof']],                #Si se encuentra un eof después, permite terminar correctamente
+    [1, 'finBloque', []],               #Si hay un bloque pendiente, permite salir
 
-    #Producción para A'' (comentarios multilínea)
-    [2, 'comentario_bloque', ['comentario_bloque']]  #Solo acepta el token de un comentario bloque
+    #Producción para manejar el token 'comentario_bloque'
+    [2, 'comentario_bloque', ['comentario_bloque']],  #Consume el token 'comentario_bloque'
+    [2, 'eof', ['eof']],                              #Si se encuentra un eof después, permite terminar correctamente
+    [2, 'finBloque', []],                             #Si hay un bloque pendiente, permite salir
+]
+
+tabla_condicionales = [ #Tabla LL(1) de producciones para condicionales
+    #Producción principal para condicionales
+    [0, 'if', ['if', 'LPAREN', 5, 'RPAREN', 'inicioBloque', 0, 'finBloque', 1]],
+    [0, 'finBloque', []],  #Permitir que un bloque termine directamente
+    [0, 'eof', ['eof']],  #Permitir terminar directamente en `eof`
+
+    #Manejo del bloque else 
+    [1, 'else', ['else', 'inicioBloque', 0, 'finBloque']],  #Si hay un else, abre un bloque nuevo
+    [1, 'finBloque', []],  #Si no hay else, acepta epsilon para terminar el bloque
+    [1, 'eof', []],  #Permite finalizar directamente si llega al final del archivo
+
+    #Producción para expresiones condicionales (if)
+    [5, 'identificador', [6]],  #Condiciones que empiezan con identificadores
+    [5, 'NUMBER', [6]],  #Condiciones que empiezan con números
+    [5, 'LPAREN', ['LPAREN', 5, 'RPAREN']],  #Condiciones con paréntesis anidados
+
+    #Producción para términos en condiciones (comparadores y operandos)
+    [6, 'identificador', ['identificador', 7]],  #Términos que usan identificadores
+    [6, 'NUMBER', ['NUMBER', 7]],  #Términos que usan números
+    [6, 'char_literal', ['char_literal', 7]],  #Términos que usan caracteres
+    [6, 'LPAREN', ['LPAREN', 5, 'RPAREN']],  #Términos entre paréntesis
+
+    #Producción para operadores de comparación
+    [7, 'GREATER', ['GREATER', 6]],  #Mayor que
+    [7, 'LESS', ['LESS', 6]],  #Menor que
+    [7, 'RPAREN', []],  #Fin de la condición
+    [7, 'finBloque', []],  #Fin del bloque si se encuentra directamente
+    [7, 'eof', []],  #Permite terminar al final del archivo
 ]

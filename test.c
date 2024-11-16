@@ -2,11 +2,15 @@ int x, y, z, c;
 float pi = 3.14;
 char letter = 'a';
 
-/* Este es un comentario
-   multilinea que describe 
-   una operación */
+x = c - 5;
 
-c = c - 5;
-/**/
+// Comentario de una linea
 
-// Este es un comentario de una sola línea
+/*  este es un comentario
+    de varias lineas
+*/
+if (x < 10) {
+    y = x * 2;
+} else {
+    y = x / 2;
+}
