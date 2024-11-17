@@ -2,7 +2,7 @@
 # Lexer y parser para C #Equipo
 # ------------------------------------------------------------
 import ply.lex as lex
-from ll1_tables import tabla_variables, tabla_comentarios, tabla_condicionales, tabla_scanf_printf
+from ll1_tables import tabla_variables, tabla_comentarios, tabla_condicionales, tabla_scanf_printf, tabla_while
 from terminals import *  #Tokens y reglas de expresión regular
 from non_terminals import *  #Los no terminales
 from tabulate import tabulate
@@ -13,7 +13,8 @@ tablas_ll1 = {
     "tabla_variables": tabla_variables,
     "tabla_comentarios": tabla_comentarios,
     "tabla_condicionales": tabla_condicionales,
-    "tabla_scanf_printf": tabla_scanf_printf
+    "tabla_scanf_printf": tabla_scanf_printf,
+    "tabla_while": tabla_while
 }
 
 stack = ['eof', 0]

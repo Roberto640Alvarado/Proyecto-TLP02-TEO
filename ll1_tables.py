@@ -128,6 +128,25 @@ tabla_scanf_printf = [ #Tabla LL(1) de producciones para scanf y printf
     [8, 'RPAREN', []],                           #Caso vacío (fin de la lista)
 ]
 
+tabla_while = [
+    #Producción principal para `while`
+    [0, 'while', ['while', 'LPAREN', 1, 'RPAREN', 'inicioBloque', 0, 'finBloque', 0]],
+
+    #Producción para condiciones dentro del `while`
+    [1, 'identificador', [2]],             #Condiciones que empiezan con identificadores
+    [1, 'NUMBER', [2]],                    #Condiciones que empiezan con números
+    [1, 'LPAREN', ['LPAREN', 1, 'RPAREN']],#Condiciones con paréntesis anidados
+
+    #Producción para términos en condiciones (operandos de comparación)
+    [2, 'identificador', ['identificador', 3]],  #Términos que usan identificadores
+    [2, 'NUMBER', ['NUMBER', 3]],                #Términos que usan números
+
+    #Producción para operadores de comparación (solo `>` y `<`)
+    [3, 'GREATER', ['GREATER', 2]],  #Mayor que
+    [3, 'LESS', ['LESS', 2]],        #Menor que
+    [3, 'RPAREN', []],               #Fin de la condición
+]
+
 #######################################################
 #Las tablas a continuacion falta de probar y verificar 
 #######################################################
@@ -182,7 +201,7 @@ tabla_funciones = [
 ]
 
 
-tabla_while = [ #Tabla LL(1) para estructura while
+tabla_while_Probando = [ #Tabla LL(1) para estructura while
     # Producción para S: permite procesar while
     [0, 'while', [1, 0]],                    # while y continúa con otro while posible
     [0, 'eof', ['eof']],                     # Fin de entrada

@@ -6,7 +6,7 @@ tokens = (
     'keyword', 'identificador', 'inicioBloque', 'finBloque', 'finInstruccion',
     'asignacion', 'comentario', 'comentario_bloque', 'cadena', 'coma', 'eof',
     'int', 'float', 'char', 'char_literal', 'GREATER', 'LESS', 'if', 'else',
-    'void', 'return', 'scanf', 'printf','FORMAT', 'AMPERSAND'
+    'void', 'return', 'scanf', 'printf','FORMAT', 'AMPERSAND', 'while'
 )
 
 #Reglas de expresiones regulares para tokens simples
@@ -48,6 +48,10 @@ def t_printf(t):
 
 def t_FORMAT(t):
     r'%[d|f|c|s]'
+    return t
+
+def t_while(t):
+    r'while'
     return t
 
 #Regla para números (enteros y decimales)
