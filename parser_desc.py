@@ -63,59 +63,54 @@ def miParser(nombre_archivo):
         print("\n")
         while True:
             print(
-            colored(f"Token: {tok.type}", "green") + 
-            f" | Valor: {colored(tok.value, 'yellow')}" + 
-            f" | Línea: {colored(tok.lineno, 'cyan')}" + 
-            f" | Pila: {colored(', '.join(map(str, stack)), 'magenta')}"
-)
+                colored(f"Token: {tok.type}", "green") + 
+                f" | Valor: {colored(tok.value, 'yellow')}" + 
+                f" | Línea: {colored(tok.lineno, 'cyan')}" + 
+                f" | Pila: {colored(', '.join(map(str, stack)), 'magenta')}"
+            )
             
             if x == tok.type and x == 'eof':
+                if 'finBloque' in stack:
+                    print(colored(f"\nError: Falta 'finBloque' antes de finalizar el archivo.", "red", attrs=['bold']))
+                    return
                 print(colored("\nArchivo terminado exitosamente. No se encontraron errores sintácticos.", "green", attrs=['bold']))
                 return
-            else:
-                if x == tok.type and x != 'eof':
-                    #Coincidencia exacta entre el token y el top de la pila
-                    stack.pop()
-                    x = stack[-1]
-                    tok = lexer.token()
-                elif x == 'finBloque' and tok.type == 'finBloque':
-                    #Consume el finBloque y avanza
+            elif x == tok.type and x != 'eof':
+                #Coincidencia exacta entre el token y el top de la pila
+                stack.pop()
+                x = stack[-1]
+                tok = lexer.token()
+            elif x == 'finBloque':
+                #Validar cierre de bloque
+                if tok.type == 'finBloque':
                     stack.pop()
                     tok = lexer.token()
                     if stack:
-                        x = stack[-1]  #Actualiza el valor en la cima de la pila
-                    continue
-                elif x in ['comentario', 'comentario_bloque']:
-                    #Manejo de comentarios (de una línea o bloque)
-                    if x == tok.type:
-                        stack.pop()
-                        tok = lexer.token()
-                    elif tok.type == 'eof':
-                        stack.pop()
-                    else:
-                        print(colored(f"Error: se esperaba {x} pero se encontró {tok.type}", "red"))
-                        return
-                elif x not in tokens:
-                    #Buscar en las tablas LL(1) si el top de la pila es un no terminal
-                    celda = None
-                    for nombre_tabla, tabla in tablas_ll1.items():
-                        celda = buscar_en_tabla(x, tok.type, tabla)
-                        if celda is not None:
-                            print(colored(f"Producción encontrada: {x} -> {celda}", "blue"))
-                            break
-                    if celda is None:
-                        print(colored(f"\nError: NO se esperaba {tok.type}", "red", attrs=['bold']))
-                        print(colored(f"Línea: {tok.lineno}", "yellow"))
-                        return
-                    else:
-                        stack.pop()
-                        agregar_pila(celda)
                         x = stack[-1]
                 else:
-                    print(colored(f"Error: se esperaba {x} pero se encontró {tok.type}", "red"))
+                    print(colored(f"\nError: Se esperaba 'finBloque', pero se encontró {tok.type}.", "red", attrs=['bold']))
                     print(colored(f"Línea: {tok.lineno}", "yellow"))
-                    print(colored("Pila actual:", "magenta"), stack)
                     return
+            elif x not in tokens:
+                celda = None
+                for nombre_tabla, tabla in tablas_ll1.items():
+                    celda = buscar_en_tabla(x, tok.type, tabla)
+                    if celda is not None:
+                        print(colored(f"Producción encontrada: {x} -> {celda}", "blue"))
+                        break
+                if celda is None:
+                    print(colored(f"\nError: NO se esperaba {tok.type}", "red", attrs=['bold']))
+                    print(colored(f"Línea: {tok.lineno}", "yellow"))
+                    return
+                else:
+                    stack.pop()
+                    agregar_pila(celda)
+                    x = stack[-1]
+            else:
+                print(colored(f"Error: Se esperaba {x} pero se encontró {tok.type}", "red"))
+                print(colored(f"Línea: {tok.lineno}", "yellow"))
+                print(colored("Pila actual:", "magenta"), stack)
+                return
     except FileNotFoundError:
         print(colored(f"El archivo '{nombre_archivo}' no se encontró.", "red"))
     except Exception as e:
