@@ -181,3 +181,74 @@ tabla_funciones = [
     [7, 'SEMICOLON', []],       # Fin expr
     [7, 'RPAREN', []]           # Fin expr
 ]
+
+
+tabla_while = [ #Tabla LL(1) para estructura while
+    # Producción para S: permite procesar while
+    [0, 'while', [1, 0]],                    # while y continúa con otro while posible
+    [0, 'eof', ['eof']],                     # Fin de entrada
+    
+    # Producción para While (W)
+    [1, 'while', ['while', 'LPAREN', 2, 'RPAREN', 'inicioBloque', 6, 'finBloque']],
+    
+    # Producción para condiciones (C)
+    [2, 'identificador', [3, 4]],            # C -> L C'
+    [2, 'NOT', ['NOT', 2]],                  # C -> NOT C
+    
+    # Producción para expresión lógica (L)
+    [3, 'identificador', [5, 8, 5]],         # L -> E comp E
+    
+    # Producción para C' (extensión de condición)
+    [4, 'AND', ['AND', 2]],                  # C' -> AND C
+    [4, 'OR', ['OR', 2]],                    # C' -> OR C
+    [4, 'RPAREN', []],                       # C' -> ε
+    
+    # Producción para expresiones (E)
+    [5, 'NUMBER', [7]],                      # E -> T
+    [5, 'identificador', [7]],               # E -> T
+    [5, 'char_literal', [7]],                # E -> T
+    [5, 'LPAREN', ['LPAREN', 5, 'RPAREN']],  # E -> (E)
+    
+    # Producción para bloque de código (B)
+    [6, 'identificador', [9, 6]],            # B -> A B
+    [6, 'if', [11, 6]],                      # B -> I B (Permite if dentro del while)
+    [6, 'finBloque', []],                    # B -> ε
+    
+    # Producción para términos (T)
+    [7, 'NUMBER', ['NUMBER', 10]],           # T -> F T'
+    [7, 'identificador', ['identificador', 10]], # T -> F T'
+    [7, 'char_literal', ['char_literal', 10]],  # T -> F T'
+    
+    # Producción para comparadores
+    [8, 'GREATER', ['GREATER']],             # comp -> >
+    [8, 'LESS', ['LESS']],                   # comp -> <
+    [8, 'asignacion', ['asignacion']],       # comp -> =
+    
+    # Producción para asignaciones (A)
+    [9, 'identificador', ['identificador', 'asignacion', 5, 'finInstruccion']],
+    
+    # Producción para T' (operadores)
+    [10, 'PLUS', ['PLUS', 7, 10]],          # T' -> + T T'
+    [10, 'MINUS', ['MINUS', 7, 10]],        # T' -> - T T'
+    [10, 'TIMES', ['TIMES', 7, 10]],        # T' -> * T T'
+    [10, 'DIVIDE', ['DIVIDE', 7, 10]],      # T' -> / T T'
+    [10, 'RPAREN', []],                     # T' -> ε
+    [10, 'finInstruccion', []],             # T' -> ε
+    [10, 'GREATER', []],                    # T' -> ε
+    [10, 'LESS', []],                       # T' -> ε
+    [10, 'asignacion', []],                 # T' -> ε
+    
+    # Producción para If-Else (I) dentro del while
+    [11, 'if', ['if', 'LPAREN', 2, 'RPAREN', 'inicioBloque', 12, 'finBloque', 13]],
+    
+    # Producción para bloque de if (permite anidamiento)
+    [12, 'identificador', [9, 12]],         # Asignaciones dentro del if
+    [12, 'if', [11, 12]],                   # If anidado
+    [12, 'finBloque', []],                  # Fin del bloque
+    
+    # Producción para else opcional
+    [13, 'else', ['else', 'inicioBloque', 12, 'finBloque']],  # Bloque else
+    [13, 'identificador', []],              # ε (no hay else)
+    [13, 'if', []],                         # ε (no hay else)
+    [13, 'finBloque', []],                  # ε (no hay else)
+]
