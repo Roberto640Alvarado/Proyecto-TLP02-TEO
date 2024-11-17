@@ -92,3 +92,43 @@ tabla_condicionales = [ #Tabla LL(1) de producciones para condicionales
     [7, 'finBloque', []],            #Fin del bloque si se encuentra directamente
     [7, 'eof', []],                  #Permite terminar al final del archivo
 ]
+
+# Tabla LL(1) de producciones para scanf y printf
+tabla_scanf_printf = [
+    # Producción principal para el programa
+    [0, 'scanf', [1, 0]],                        # Procesa scanf y continúa con más instrucciones
+    [0, 'printf', [2, 0]],                       # Procesa printf y continúa con más instrucciones
+    [0, 'eof', ['eof']],                         # Fin de entrada, permite terminar en eof
+
+    # Producción para scanf
+    [1, 'scanf', ['scanf', 'LPAREN', 3, 'COMA', 5, 'RPAREN', 'SEMICOLON']],  # scanf("%d", var);
+
+    # Producción para printf
+    [2, 'printf', ['printf', 'LPAREN', 3, 6, 'RPAREN', 'SEMICOLON']],        # printf("%d", var);
+
+    # Producción para formatos (formato de scanf/printf)
+    [3, 'FORMAT', ['FORMAT']],  # Formato específico ("%d", "%c", "%f")
+
+    # Producción para lista de variables (scanf)
+    [5, 'identificador', ['identificador', 7]],  # Procesa una variable o lista de variables
+
+    # Producción para lista de valores (printf)
+    [6, 'COMA', ['COMA', 8]],  # Procesa lista de valores si está presente
+    [6, 'RPAREN', []],         # Caso vacío (no hay valores adicionales)
+
+    # Producción recursiva para lista de variables
+    [7, 'COMA', ['COMA', 'identificador', 7]],  # Continúa procesando lista de variables
+    [7, 'RPAREN', []],                          # Caso vacío (fin de la lista)
+
+    # Producción recursiva para lista de valores
+    [8, 'NUMBER', ['NUMBER', 8]],        # Valores adicionales numéricos (int)
+    [8, 'FLOAT', ['FLOAT', 8]],          # Valores adicionales flotantes (float)
+    [8, 'CHAR', ['CHAR', 8]],            # Valores adicionales de tipo caracter (char)
+    [8, 'RPAREN', []],                   # Caso vacío (fin de la lista)
+
+    # Terminales básicos para valores y variables
+    [9, 'identificador', ['identificador']],  # Variable o identificador
+    [9, 'NUMBER', ['NUMBER']],               # Valor numérico (int)
+    [9, 'FLOAT', ['FLOAT']],                 # Valor flotante (float)
+    [9, 'CHAR', ['CHAR']]                    # Valor de tipo caracter (char)
+]
