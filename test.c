@@ -16,7 +16,12 @@ printf("El número ingresado es: %d\n", num);
 while (x > 5) {
     x = x - 1;
     // Comentario de xD
-    printf("x es igual a 3\n");
+    if(x < 7) {
+        printf("x es igual a 7\n");
+    }
+    else {
+        printf("x es mayor a 7\n");
+    }
 }
 
 // Comentario de una linea
