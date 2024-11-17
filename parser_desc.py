@@ -2,7 +2,7 @@
 # Lexer y parser para C #Equipo
 # ------------------------------------------------------------
 import ply.lex as lex
-from ll1_tables import tabla_variables, tabla_comentarios, tabla_condicionales
+from ll1_tables import tabla_variables, tabla_comentarios, tabla_condicionales, tabla_scanf_printf
 from terminals import *  #Tokens y reglas de expresión regular
 from non_terminals import *  #Los no terminales
 from tabulate import tabulate
@@ -12,8 +12,8 @@ from termcolor import colored
 tablas_ll1 = {
     "tabla_variables": tabla_variables,
     "tabla_comentarios": tabla_comentarios,
-    "tabla_condicionales": tabla_condicionales
-    
+    "tabla_condicionales": tabla_condicionales,
+    "tabla_scanf_printf": tabla_scanf_printf
 }
 
 stack = ['eof', 0]

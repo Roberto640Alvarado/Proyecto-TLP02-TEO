@@ -5,10 +5,12 @@ tokens = (
     'NUMBER', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'LPAREN', 'RPAREN',
     'keyword', 'identificador', 'inicioBloque', 'finBloque', 'finInstruccion',
     'asignacion', 'comentario', 'comentario_bloque', 'cadena', 'coma', 'eof',
-    'int', 'float', 'char', 'char_literal', 'GREATER', 'LESS', 'if', 'else'
+    'int', 'float', 'char', 'char_literal', 'GREATER', 'LESS', 'if', 'else',
+    'void', 'return', 'scanf', 'printf','FORMAT', 'AMPERSAND'
 )
 
 #Reglas de expresiones regulares para tokens simples
+t_AMPERSAND = r'&'
 t_PLUS = r'\+'
 t_MINUS = r'-'
 t_TIMES = r'\*'
@@ -36,6 +38,18 @@ def t_char(t):
     r'(char)'
     return t
 
+def t_scanf(t):
+    r'scanf'
+    return t
+
+def t_printf(t):
+    r'printf'
+    return t
+
+def t_FORMAT(t):
+    r'%[d|f|c|s]'
+    return t
+
 #Regla para números (enteros y decimales)
 def t_NUMBER(t):
     r'\d+(\.\d+)?'  
@@ -49,7 +63,7 @@ def t_char_literal(t):
     return t
 
 def t_keyword(t):
-    r'(return)|(do)|(while)|(for)|(void)'
+    r'(do)|(while)|(for)'
     return t
 
 def t_cadena(t):
@@ -78,6 +92,15 @@ def t_else(t):
     r'else'
     return t
 
+def t_void(t):
+    r'void'
+    return t
+
+def t_return(t):
+    r'return'
+    return t
+
+#Debe ir al final para evitar conflictos con otros tokens que contengan letras
 def t_identificador(t):
     r'([a-zA-Z_][a-zA-Z0-9_]*)'
     return t
@@ -86,6 +109,7 @@ def t_identificador(t):
 #Ignora espacios y tabs
 t_ignore = ' \t'
 
+#Regla para manejar errores de caracteres ilegales
 def t_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
