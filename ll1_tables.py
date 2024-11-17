@@ -64,30 +64,31 @@ tabla_comentarios = [ #Tabla LL(1) de producciones para comentarios
 
 tabla_condicionales = [ #Tabla LL(1) de producciones para condicionales
     #Producción principal para condicionales
-    [0, 'if', ['if', 'LPAREN', 5, 'RPAREN', 'inicioBloque', 0, 'finBloque', 1]],
-    [0, 'finBloque', []],  #Permitir que un bloque termine directamente
-    [0, 'eof', ['eof']],  #Permitir terminar directamente en `eof`
+    [0, 'if', ['if', 'LPAREN', 5, 'RPAREN', 'inicioBloque', 0, 'finBloque', 0]],  #Permite más instrucciones después del bloque
+    [0, 'else', ['else', 'inicioBloque', 0, 'finBloque', 0]],                     #Permite más instrucciones después del bloque else
+    [0, 'finBloque', []],                    #Consume el finBloque y termina el bloque actual
+    [0, 'eof', ['eof']],                     #Permite terminar con eof
 
-    #Manejo del bloque else 
-    [1, 'else', ['else', 'inicioBloque', 0, 'finBloque']],  #Si hay un else, abre un bloque nuevo
-    [1, 'finBloque', []],  #Si no hay else, acepta epsilon para terminar el bloque
-    [1, 'eof', []],  #Permite finalizar directamente si llega al final del archivo
+    # Manejo del bloque `else`
+    [1, 'else', ['else', 'inicioBloque', 0, 'finBloque', 0]],  #Permite continuar después del bloque else
+    [1, 'finBloque', []],                                     #Consume el finBloque y termina
+    [1, 'eof', []],                                           #Permite finalizar directamente si llega al final del archivo
 
     #Producción para expresiones condicionales (if)
-    [5, 'identificador', [6]],  #Condiciones que empiezan con identificadores
-    [5, 'NUMBER', [6]],  #Condiciones que empiezan con números
-    [5, 'LPAREN', ['LPAREN', 5, 'RPAREN']],  #Condiciones con paréntesis anidados
+    [5, 'identificador', [6]],             #Condiciones que empiezan con identificadores
+    [5, 'NUMBER', [6]],                    #Condiciones que empiezan con números
+    [5, 'LPAREN', ['LPAREN', 5, 'RPAREN']],#Condiciones con paréntesis anidados
 
     #Producción para términos en condiciones (comparadores y operandos)
     [6, 'identificador', ['identificador', 7]],  #Términos que usan identificadores
-    [6, 'NUMBER', ['NUMBER', 7]],  #Términos que usan números
-    [6, 'char_literal', ['char_literal', 7]],  #Términos que usan caracteres
-    [6, 'LPAREN', ['LPAREN', 5, 'RPAREN']],  #Términos entre paréntesis
+    [6, 'NUMBER', ['NUMBER', 7]],                #Términos que usan números
+    [6, 'char_literal', ['char_literal', 7]],    #Términos que usan caracteres
+    [6, 'LPAREN', ['LPAREN', 5, 'RPAREN']],      #Términos entre paréntesis
 
     #Producción para operadores de comparación
     [7, 'GREATER', ['GREATER', 6]],  #Mayor que
-    [7, 'LESS', ['LESS', 6]],  #Menor que
-    [7, 'RPAREN', []],  #Fin de la condición
-    [7, 'finBloque', []],  #Fin del bloque si se encuentra directamente
-    [7, 'eof', []],  #Permite terminar al final del archivo
+    [7, 'LESS', ['LESS', 6]],        #Menor que
+    [7, 'RPAREN', []],               #Fin de la condición
+    [7, 'finBloque', []],            #Fin del bloque si se encuentra directamente
+    [7, 'eof', []],                  #Permite terminar al final del archivo
 ]

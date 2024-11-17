@@ -55,17 +55,22 @@ def miParser(nombre_archivo):
         
         #Reiniciar el lexer para procesar los tokens en el parser
         lexer.input(fuente)
+        lexer.lineno = 1  
         tok = lexer.token()
         x = stack[-1]
 
         print("\n" + colored("<<<<<<<<<<<<<<<<< Proceso de Análisis Sintáctico >>>>>>>>>>>>>>>>>", "cyan", attrs=['bold', 'underline']))
+        print("\n")
         while True:
-            print(colored(f"Token actual: {tok.type}", "green") + 
-                  f", Valor: {tok.value}, Línea: {tok.lineno}" + 
-                  colored(f" | Pila: {stack}", "magenta"))
+            print(
+            colored(f"Token: {tok.type}", "green") + 
+            f" | Valor: {colored(tok.value, 'yellow')}" + 
+            f" | Línea: {colored(tok.lineno, 'cyan')}" + 
+            f" | Pila: {colored(', '.join(map(str, stack)), 'magenta')}"
+)
             
             if x == tok.type and x == 'eof':
-                print(colored("\nCadena terminada exitosamente. No se encontraron errores sintácticos.", "green", attrs=['bold']))
+                print(colored("\nArchivo terminado exitosamente. No se encontraron errores sintácticos.", "green", attrs=['bold']))
                 return
             else:
                 if x == tok.type and x != 'eof':
@@ -100,8 +105,7 @@ def miParser(nombre_archivo):
                             break
                     if celda is None:
                         print(colored(f"\nError: NO se esperaba {tok.type}", "red", attrs=['bold']))
-                        print(colored(f"Producción esperada para {x}: {[p[1] for p in tabla if p[0] == x]}", "yellow"))
-                        print(colored(f"En posición: {tok.lexpos}", "yellow"))
+                        print(colored(f"Línea: {tok.lineno}", "yellow"))
                         return
                     else:
                         stack.pop()
@@ -109,7 +113,7 @@ def miParser(nombre_archivo):
                         x = stack[-1]
                 else:
                     print(colored(f"Error: se esperaba {x} pero se encontró {tok.type}", "red"))
-                    print(colored(f"En la posición: {tok.lexpos}", "yellow"))
+                    print(colored(f"Línea: {tok.lineno}", "yellow"))
                     print(colored("Pila actual:", "magenta"), stack)
                     return
     except FileNotFoundError:
