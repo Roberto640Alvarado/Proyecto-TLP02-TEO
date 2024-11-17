@@ -132,3 +132,52 @@ tabla_scanf_printf = [
     [9, 'FLOAT', ['FLOAT']],                 # Valor flotante (float)
     [9, 'CHAR', ['CHAR']]                    # Valor de tipo caracter (char)
 ]
+
+# Tabla LL(1) para funciones en C: Declaración y Definición
+tabla_funciones = [
+    # Producción principal para declaraciones (D)
+    [0, 'void', [1, 'identificador', 'LPAREN', 2, 'RPAREN', 'SEMICOLON']],  # void fn();
+    [0, 'int', [1, 'identificador', 'LPAREN', 2, 'RPAREN', 'SEMICOLON']],   # int fn();
+    [0, 'float', [1, 'identificador', 'LPAREN', 2, 'RPAREN', 'SEMICOLON']], # float fn();
+
+    # Producción principal para definiciones (F)
+    [1, 'void', [1, 'identificador', 'LPAREN', 2, 'RPAREN', 'inicioBloque', 3, 'finBloque']],  # void fn() { ... }
+    [1, 'int', [1, 'identificador', 'LPAREN', 2, 'RPAREN', 'inicioBloque', 3, 'finBloque']],   # int fn() { ... }
+    [1, 'float', [1, 'identificador', 'LPAREN', 2, 'RPAREN', 'inicioBloque', 3, 'finBloque']], # float fn() { ... }
+
+    # Producción para lista de parámetros (LP)
+    [2, 'int', [1, 'identificador', 4]],    # int x, ...
+    [2, 'float', [1, 'identificador', 4]],  # float y, ...
+    [2, 'void', ['void']],                  # void (sin parámetros)
+    [2, 'RPAREN', []],                      # Caso vacío (sin parámetros)
+
+    # Producción recursiva para lista de parámetros adicionales
+    [4, 'COMA', ['COMA', 1, 'identificador', 4]],  # int x, int y, ...
+    [4, 'RPAREN', []],                             # Fin de lista de parámetros
+
+    # Producción para lista de instrucciones (LI)
+    [3, 'int', [1, 'identificador', 'SEMICOLON', 3]],      # Declaración dentro del bloque
+    [3, 'float', [1, 'identificador', 'SEMICOLON', 3]],    # Declaración dentro del bloque
+    [3, 'return', ['return', 5, 'SEMICOLON', 3]],          # return expr;
+    [3, 'if', ['if', 'LPAREN', 5, 'RPAREN', 'inicioBloque', 3, 'finBloque', 3]],  # if (expr) { ... }
+    [3, 'finBloque', []],                                  # Fin del bloque
+    [3, 'eof', ['eof']],                                   # Fin de archivo
+
+    # Producción para expresiones (E)
+    [5, 'identificador', [6]],             # Expr: id = ...
+    [5, 'NUMBER', [6]],                    # Expr: num = ...
+    [5, 'LPAREN', ['LPAREN', 5, 'RPAREN']],# Expr: (expr)
+    
+    # Producción para términos en expresiones
+    [6, 'identificador', ['identificador', 7]],  # Term: id op ...
+    [6, 'NUMBER', ['NUMBER', 7]],                # Term: num op ...
+    [6, 'LPAREN', ['LPAREN', 5, 'RPAREN']],      # Term: (expr)
+    
+    # Producción para operadores en expresiones
+    [7, 'PLUS', ['PLUS', 6]],   # +
+    [7, 'MINUS', ['MINUS', 6]], # -
+    [7, 'TIMES', ['TIMES', 6]], # *
+    [7, 'DIVIDE', ['DIVIDE', 6]],# /
+    [7, 'SEMICOLON', []],       # Fin expr
+    [7, 'RPAREN', []]           # Fin expr
+]
