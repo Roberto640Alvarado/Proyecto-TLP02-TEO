@@ -128,7 +128,7 @@ tabla_scanf_printf = [ #Tabla LL(1) de producciones para scanf y printf
     [8, 'RPAREN', []],                           #Caso vacío (fin de la lista)
 ]
 
-tabla_while = [
+tabla_while = [ #Tabla LL(1) de producciones para ciclos while
     #Producción principal para `while`
     [0, 'while', ['while', 'LPAREN', 1, 'RPAREN', 'inicioBloque', 0, 'finBloque', 0]],
 
@@ -147,12 +147,84 @@ tabla_while = [
     [3, 'RPAREN', []],               #Fin de la condición
 ]
 
+tabla_funciones = [
+    # Producción principal para declaración/definición de funciones
+    [0, 'void', ['void', 'identificador', 'LPAREN', 1, 'RPAREN', 3, 0]],   # void func() { Bloque }
+    [0, 'int', ['int', 'identificador', 'LPAREN', 1, 'RPAREN', 3, 0]],     # int func() { Bloque }
+    [0, 'float', ['float', 'identificador', 'LPAREN', 1, 'RPAREN', 3, 0]], # float func() { Bloque }
+    [0, 'eof', ['eof']],                                                  # Fin del archivo
+
+    # Producción para parámetros dentro de ( )
+    [1, 'int', ['int', 'identificador', 2]],       # int x
+    [1, 'float', ['float', 'identificador', 2]],   # float y
+    [1, 'char', ['char', 'identificador', 2]],     # char z
+    [1, 'RPAREN', []],                             # Sin parámetros (ε)
+
+    # Producción para lista de parámetros
+    [2, 'coma', ['coma', 1]],                      # , siguiente parámetro
+    [2, 'RPAREN', []],                             # Fin de la lista (ε)
+
+    # Producción para el bloque o cuerpo de la función
+    [3, 'inicioBloque', ['inicioBloque', 6, 'finBloque']],  # { Cuerpo de la función }
+
+    # Producción para el cuerpo de la función: permite cualquier cosa válida
+    [6, 'int', [7, 6]],                   # Declaración de variables
+    [6, 'float', [7, 6]],                 # Declaración de variables
+    [6, 'char', [7, 6]],                  # Declaración de variables
+    [6, 'identificador', [7, 6]],         # Llamadas a funciones
+    [6, 'printf', [7, 6]],                # printf
+    [6, 'scanf', [7, 6]],                 # scanf
+    [6, 'while', [7, 6]],                 # Ciclo while
+    [6, 'if', [7, 6]],                    # Condicional if
+    [6, 'else', [7, 6]],                  # Bloque else
+    [6, 'comentario', [7, 6]],            # Comentarios
+    [6, 'return', [7, 6]],                # return statement
+    [6, 'finBloque', []],                 # Fin del bloque (ε)
+
+    # Producción para instrucciones válidas
+    [7, 'int', [1, 'identificador', 8, 'finInstruccion']],                     # Declaración
+    [7, 'float', [1, 'identificador', 8, 'finInstruccion']],                   # Declaración
+    [7, 'char', [1, 'identificador', 8, 'finInstruccion']],                    # Declaración
+    [7, 'identificador', ['identificador', 'LPAREN', 10, 'RPAREN', 'finInstruccion']],  # Llamada a función
+    [7, 'printf', ['printf', 'LPAREN', 'cadena', 'RPAREN', 'finInstruccion']],  # printf
+    [7, 'scanf', ['scanf', 'LPAREN', 'cadena', 'coma', 10, 'RPAREN', 'finInstruccion']], # scanf
+    [7, 'while', ['while', 'LPAREN', 9, 'RPAREN', 3]],                         # while (condición) { cuerpo }
+    [7, 'if', ['if', 'LPAREN', 9, 'RPAREN', 3, 11]],                           # if (condición) { cuerpo }
+    [7, 'comentario', ['comentario']],                                         # Comentarios
+    [7, 'return', ['return', 9, 'finInstruccion']],                            # return Expresión
+
+    # Producción para manejo opcional de else
+    [11, 'else', ['else', 3]],      # else { cuerpo }
+    [11, 'finBloque', []],         # Nada (ε)
+
+    # Producción para asignación opcional
+    [8, 'asignacion', ['asignacion', 9]],  # Asignación inicial
+    [8, 'finInstruccion', []],             # Nada (ε)
+
+    # Producción para expresiones
+    [9, 'identificador', [5]],        # Variable o expresión
+    [9, 'NUMBER', [5]],               # Número
+    [9, 'char_literal', [4]],         # Literal de carácter
+    [9, 'LPAREN', ['LPAREN', 9, 'RPAREN']],  # Paréntesis para expresiones
+
+    # Producción para argumentos en llamada a función
+    [10, 'identificador', [11]],      # Argumentos con variables
+    [10, 'NUMBER', [11]],             # Argumentos con números
+    [10, 'RPAREN', []],               # Sin argumentos, ε
+
+    # Producción para lista de argumentos
+    [11, 'coma', ['coma', 10]],       # Más argumentos
+    [11, 'RPAREN', []],               # Fin de la lista
+]
+
+
+
 #######################################################
 #Las tablas a continuacion falta de probar y verificar 
 #######################################################
 
 # Tabla LL(1) para funciones en C: Declaración y Definición
-tabla_funciones = [
+tabla_funciones_Prueba = [
     # Producción principal para declaraciones (D)
     [0, 'void', [1, 'identificador', 'LPAREN', 2, 'RPAREN', 'SEMICOLON']],  # void fn();
     [0, 'int', [1, 'identificador', 'LPAREN', 2, 'RPAREN', 'SEMICOLON']],   # int fn();
@@ -200,73 +272,3 @@ tabla_funciones = [
     [7, 'RPAREN', []]           # Fin expr
 ]
 
-
-tabla_while_Probando = [ #Tabla LL(1) para estructura while
-    # Producción para S: permite procesar while
-    [0, 'while', [1, 0]],                    # while y continúa con otro while posible
-    [0, 'eof', ['eof']],                     # Fin de entrada
-    
-    # Producción para While (W)
-    [1, 'while', ['while', 'LPAREN', 2, 'RPAREN', 'inicioBloque', 6, 'finBloque']],
-    
-    # Producción para condiciones (C)
-    [2, 'identificador', [3, 4]],            # C -> L C'
-    [2, 'NOT', ['NOT', 2]],                  # C -> NOT C
-    
-    # Producción para expresión lógica (L)
-    [3, 'identificador', [5, 8, 5]],         # L -> E comp E
-    
-    # Producción para C' (extensión de condición)
-    [4, 'AND', ['AND', 2]],                  # C' -> AND C
-    [4, 'OR', ['OR', 2]],                    # C' -> OR C
-    [4, 'RPAREN', []],                       # C' -> ε
-    
-    # Producción para expresiones (E)
-    [5, 'NUMBER', [7]],                      # E -> T
-    [5, 'identificador', [7]],               # E -> T
-    [5, 'char_literal', [7]],                # E -> T
-    [5, 'LPAREN', ['LPAREN', 5, 'RPAREN']],  # E -> (E)
-    
-    # Producción para bloque de código (B)
-    [6, 'identificador', [9, 6]],            # B -> A B
-    [6, 'if', [11, 6]],                      # B -> I B (Permite if dentro del while)
-    [6, 'finBloque', []],                    # B -> ε
-    
-    # Producción para términos (T)
-    [7, 'NUMBER', ['NUMBER', 10]],           # T -> F T'
-    [7, 'identificador', ['identificador', 10]], # T -> F T'
-    [7, 'char_literal', ['char_literal', 10]],  # T -> F T'
-    
-    # Producción para comparadores
-    [8, 'GREATER', ['GREATER']],             # comp -> >
-    [8, 'LESS', ['LESS']],                   # comp -> <
-    [8, 'asignacion', ['asignacion']],       # comp -> =
-    
-    # Producción para asignaciones (A)
-    [9, 'identificador', ['identificador', 'asignacion', 5, 'finInstruccion']],
-    
-    # Producción para T' (operadores)
-    [10, 'PLUS', ['PLUS', 7, 10]],          # T' -> + T T'
-    [10, 'MINUS', ['MINUS', 7, 10]],        # T' -> - T T'
-    [10, 'TIMES', ['TIMES', 7, 10]],        # T' -> * T T'
-    [10, 'DIVIDE', ['DIVIDE', 7, 10]],      # T' -> / T T'
-    [10, 'RPAREN', []],                     # T' -> ε
-    [10, 'finInstruccion', []],             # T' -> ε
-    [10, 'GREATER', []],                    # T' -> ε
-    [10, 'LESS', []],                       # T' -> ε
-    [10, 'asignacion', []],                 # T' -> ε
-    
-    # Producción para If-Else (I) dentro del while
-    [11, 'if', ['if', 'LPAREN', 2, 'RPAREN', 'inicioBloque', 12, 'finBloque', 13]],
-    
-    # Producción para bloque de if (permite anidamiento)
-    [12, 'identificador', [9, 12]],         # Asignaciones dentro del if
-    [12, 'if', [11, 12]],                   # If anidado
-    [12, 'finBloque', []],                  # Fin del bloque
-    
-    # Producción para else opcional
-    [13, 'else', ['else', 'inicioBloque', 12, 'finBloque']],  # Bloque else
-    [13, 'identificador', []],              # ε (no hay else)
-    [13, 'if', []],                         # ε (no hay else)
-    [13, 'finBloque', []],                  # ε (no hay else)
-]
