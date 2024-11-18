@@ -5,19 +5,17 @@ int resultado;
 
 printf("Hola mundo\n"); 
 
+
 void saludar() {
     printf("Hola mundo\n");  
-    // Comentario de una linea
+    // Comentario de una linea 
     if (x > 5) {
         printf("x es mayor a 5\n");
     }
+
+    int c,xs;
 }
 
-int suma(int a, int b) {
-    return a + b;
-}
-
-int resultado = suma(3, 5);
 
 // Comentario de una linea
  

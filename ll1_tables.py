@@ -1,6 +1,13 @@
 #ll1_tables.py
 
-#Tabla LL(1) de producciones principal para variables, asignaciones, expresiones y operadores
+##################################################################################################
+#                        TABLA DE PRODUCCIONES LL(1) PARA EL ANALIZADOR SINTÁCTICO               #
+##################################################################################################
+
+
+############################################################
+#         TABLA: Variables, Operadores aritmeticos         #
+############################################################
 tabla_variables = [
     #Producción para S: permite que S procese declaraciones y asignaciones
     [0, 'int', [1, 'identificador', 2, 0]],       #int x; y continúa con otra declaración o asignación
@@ -45,6 +52,9 @@ tabla_variables = [
    
 ]
 
+############################################################
+#                   TABLA: Comentarios                     #
+############################################################
 tabla_comentarios = [ #Tabla LL(1) de producciones para comentarios
     #Producción principal para manejar comentarios
     [0, 'comentario', [1, 0]],          #Maneja un comentario de una línea y continúa
@@ -62,6 +72,9 @@ tabla_comentarios = [ #Tabla LL(1) de producciones para comentarios
     [2, 'finBloque', []],                             #Si hay un bloque pendiente, permite salir
 ]
 
+############################################################
+#       TABLA: Condicionales y Operadores Logicos          #
+############################################################
 tabla_condicionales = [ #Tabla LL(1) de producciones para condicionales
     #Producción principal para condicionales
     [0, 'if', ['if', 'LPAREN', 5, 'RPAREN', 'inicioBloque', 0, 'finBloque', 0]],  #Permite más instrucciones después del bloque
@@ -93,6 +106,9 @@ tabla_condicionales = [ #Tabla LL(1) de producciones para condicionales
     [7, 'eof', []],                  #Permite terminar al final del archivo
 ]
 
+############################################################
+#                     TABLA: Scanf y Printf                #
+############################################################
 tabla_scanf_printf = [ #Tabla LL(1) de producciones para scanf y printf
     #Producción principal para el programa
     [0, 'scanf', [1, 0]],                        #Procesa scanf y continúa con más instrucciones
@@ -128,6 +144,9 @@ tabla_scanf_printf = [ #Tabla LL(1) de producciones para scanf y printf
     [8, 'RPAREN', []],                           #Caso vacío (fin de la lista)
 ]
 
+############################################################
+#         TABLA: Instrucciones de iteración: while         #
+############################################################
 tabla_while = [ #Tabla LL(1) de producciones para ciclos while
     #Producción principal para `while`
     [0, 'while', ['while', 'LPAREN', 1, 'RPAREN', 'inicioBloque', 0, 'finBloque', 0]],
@@ -147,128 +166,40 @@ tabla_while = [ #Tabla LL(1) de producciones para ciclos while
     [3, 'RPAREN', []],               #Fin de la condición
 ]
 
+############################################################
+#                      TABLA: Funciones                    #
+############################################################
 tabla_funciones = [
-    # Producción principal para declaración/definición de funciones
-    [0, 'void', ['void', 'identificador', 'LPAREN', 1, 'RPAREN', 3, 0]],   # void func() { Bloque }
-    [0, 'int', ['int', 'identificador', 'LPAREN', 1, 'RPAREN', 3, 0]],     # int func() { Bloque }
-    [0, 'float', ['float', 'identificador', 'LPAREN', 1, 'RPAREN', 3, 0]], # float func() { Bloque }
-    [0, 'eof', ['eof']],                                                  # Fin del archivo
+    #Producción principal para declaración/definición de funciones
+    [0, 'void', ['void', 'identificador', 'LPAREN', 1, 'RPAREN', 3, 0]],   #void func() { Bloque }
+    [0, 'int', ['int', 'identificador', 'LPAREN', 1, 'RPAREN', 3, 0]],     #int func() { Bloque }
+    [0, 'float', ['float', 'identificador', 'LPAREN', 1, 'RPAREN', 3, 0]], #float func() { Bloque }
+    [0, 'eof', ['eof']],                                                  #Fin del archivo
 
-    # Producción para parámetros dentro de ( )
-    [1, 'int', ['int', 'identificador', 2]],       # int x
-    [1, 'float', ['float', 'identificador', 2]],   # float y
-    [1, 'char', ['char', 'identificador', 2]],     # char z
-    [1, 'RPAREN', []],                             # Sin parámetros (ε)
+    #Producción para parámetros dentro de ( )
+    [1, 'int', ['int', 'identificador', 2]],       #int x
+    [1, 'float', ['float', 'identificador', 2]],   #float y
+    [1, 'char', ['char', 'identificador', 2]],     #char z
+    [1, 'RPAREN', []],                             #Sin parámetros (ε)
 
-    # Producción para lista de parámetros
-    [2, 'coma', ['coma', 1]],                      # , siguiente parámetro
-    [2, 'RPAREN', []],                             # Fin de la lista (ε)
+    #Producción para lista de parámetros
+    [2, 'coma', ['coma', 1]],                      #, siguiente parámetro
+    [2, 'RPAREN', []],                             #Fin de la lista (ε)
 
-    # Producción para el bloque o cuerpo de la función
-    [3, 'inicioBloque', ['inicioBloque', 6, 'finBloque']],  # { Cuerpo de la función }
+    #Producción para el bloque o cuerpo de la función
+    [3, 'inicioBloque', ['inicioBloque', 4, 'finBloque']],  #{ Cuerpo de la función }
 
-    # Producción para el cuerpo de la función: permite cualquier cosa válida
-    [6, 'int', [7, 6]],                   # Declaración de variables
-    [6, 'float', [7, 6]],                 # Declaración de variables
-    [6, 'char', [7, 6]],                  # Declaración de variables
-    [6, 'identificador', [7, 6]],         # Llamadas a funciones
-    [6, 'printf', [7, 6]],                # printf
-    [6, 'scanf', [7, 6]],                 # scanf
-    [6, 'while', [7, 6]],                 # Ciclo while
-    [6, 'if', [7, 6]],                    # Condicional if
-    [6, 'else', [7, 6]],                  # Bloque else
-    [6, 'comentario', [7, 6]],            # Comentarios
-    [6, 'return', [7, 6]],                # return statement
-    [6, 'finBloque', []],                 # Fin del bloque (ε)
-
-    # Producción para instrucciones válidas
-    [7, 'int', [1, 'identificador', 8, 'finInstruccion']],                     # Declaración
-    [7, 'float', [1, 'identificador', 8, 'finInstruccion']],                   # Declaración
-    [7, 'char', [1, 'identificador', 8, 'finInstruccion']],                    # Declaración
-    [7, 'identificador', ['identificador', 'LPAREN', 10, 'RPAREN', 'finInstruccion']],  # Llamada a función
-    [7, 'printf', ['printf', 'LPAREN', 'cadena', 'RPAREN', 'finInstruccion']],  # printf
-    [7, 'scanf', ['scanf', 'LPAREN', 'cadena', 'coma', 10, 'RPAREN', 'finInstruccion']], # scanf
-    [7, 'while', ['while', 'LPAREN', 9, 'RPAREN', 3]],                         # while (condición) { cuerpo }
-    [7, 'if', ['if', 'LPAREN', 9, 'RPAREN', 3, 11]],                           # if (condición) { cuerpo }
-    [7, 'comentario', ['comentario']],                                         # Comentarios
-    [7, 'return', ['return', 9, 'finInstruccion']],                            # return Expresión
-
-    # Producción para manejo opcional de else
-    [11, 'else', ['else', 3]],      # else { cuerpo }
-    [11, 'finBloque', []],         # Nada (ε)
-
-    # Producción para asignación opcional
-    [8, 'asignacion', ['asignacion', 9]],  # Asignación inicial
-    [8, 'finInstruccion', []],             # Nada (ε)
-
-    # Producción para expresiones
-    [9, 'identificador', [5]],        # Variable o expresión
-    [9, 'NUMBER', [5]],               # Número
-    [9, 'char_literal', [4]],         # Literal de carácter
-    [9, 'LPAREN', ['LPAREN', 9, 'RPAREN']],  # Paréntesis para expresiones
-
-    # Producción para argumentos en llamada a función
-    [10, 'identificador', [11]],      # Argumentos con variables
-    [10, 'NUMBER', [11]],             # Argumentos con números
-    [10, 'RPAREN', []],               # Sin argumentos, ε
-
-    # Producción para lista de argumentos
-    [11, 'coma', ['coma', 10]],       # Más argumentos
-    [11, 'RPAREN', []],               # Fin de la lista
+    #Producción para instrucciones dentro del cuerpo
+    [4, 'int', [0]],              #Reutiliza la tabla de variables
+    [4, 'float', [0]],            #Reutiliza la tabla de variables
+    [4, 'char', [0]],             #Reutiliza la tabla de variables
+    [4, 'identificador', [0]],    #Reutiliza la tabla de asignaciones
+    [4, 'printf', [0]],           #Reutiliza la tabla de scanf/printf
+    [4, 'scanf', [0]],            #Reutiliza la tabla de scanf/printf
+    [4, 'if', [0]],               #Reutiliza la tabla de condicionales
+    [4, 'while', [0]],            #Reutiliza la tabla de ciclos
+    [4, 'comentario', [0]],       #Reutiliza la tabla de comentarios
+    [4, 'comentario_bloque', [0]],#Reutiliza la tabla de comentarios
+    [4, 'finBloque', []],         #Permite cerrar el bloque
+    [4, 'eof', []],               #Termina al final del archivo
 ]
-
-
-
-#######################################################
-#Las tablas a continuacion falta de probar y verificar 
-#######################################################
-
-# Tabla LL(1) para funciones en C: Declaración y Definición
-tabla_funciones_Prueba = [
-    # Producción principal para declaraciones (D)
-    [0, 'void', [1, 'identificador', 'LPAREN', 2, 'RPAREN', 'SEMICOLON']],  # void fn();
-    [0, 'int', [1, 'identificador', 'LPAREN', 2, 'RPAREN', 'SEMICOLON']],   # int fn();
-    [0, 'float', [1, 'identificador', 'LPAREN', 2, 'RPAREN', 'SEMICOLON']], # float fn();
-
-    # Producción principal para definiciones (F)
-    [1, 'void', [1, 'identificador', 'LPAREN', 2, 'RPAREN', 'inicioBloque', 3, 'finBloque']],  # void fn() { ... }
-    [1, 'int', [1, 'identificador', 'LPAREN', 2, 'RPAREN', 'inicioBloque', 3, 'finBloque']],   # int fn() { ... }
-    [1, 'float', [1, 'identificador', 'LPAREN', 2, 'RPAREN', 'inicioBloque', 3, 'finBloque']], # float fn() { ... }
-
-    # Producción para lista de parámetros (LP)
-    [2, 'int', [1, 'identificador', 4]],    # int x, ...
-    [2, 'float', [1, 'identificador', 4]],  # float y, ...
-    [2, 'void', ['void']],                  # void (sin parámetros)
-    [2, 'RPAREN', []],                      # Caso vacío (sin parámetros)
-
-    # Producción recursiva para lista de parámetros adicionales
-    [4, 'COMA', ['COMA', 1, 'identificador', 4]],  # int x, int y, ...
-    [4, 'RPAREN', []],                             # Fin de lista de parámetros
-
-    # Producción para lista de instrucciones (LI)
-    [3, 'int', [1, 'identificador', 'SEMICOLON', 3]],      # Declaración dentro del bloque
-    [3, 'float', [1, 'identificador', 'SEMICOLON', 3]],    # Declaración dentro del bloque
-    [3, 'return', ['return', 5, 'SEMICOLON', 3]],          # return expr;
-    [3, 'if', ['if', 'LPAREN', 5, 'RPAREN', 'inicioBloque', 3, 'finBloque', 3]],  # if (expr) { ... }
-    [3, 'finBloque', []],                                  # Fin del bloque
-    [3, 'eof', ['eof']],                                   # Fin de archivo
-
-    # Producción para expresiones (E)
-    [5, 'identificador', [6]],             # Expr: id = ...
-    [5, 'NUMBER', [6]],                    # Expr: num = ...
-    [5, 'LPAREN', ['LPAREN', 5, 'RPAREN']],# Expr: (expr)
-    
-    # Producción para términos en expresiones
-    [6, 'identificador', ['identificador', 7]],  # Term: id op ...
-    [6, 'NUMBER', ['NUMBER', 7]],                # Term: num op ...
-    [6, 'LPAREN', ['LPAREN', 5, 'RPAREN']],      # Term: (expr)
-    
-    # Producción para operadores en expresiones
-    [7, 'PLUS', ['PLUS', 6]],   # +
-    [7, 'MINUS', ['MINUS', 6]], # -
-    [7, 'TIMES', ['TIMES', 6]], # *
-    [7, 'DIVIDE', ['DIVIDE', 6]],# /
-    [7, 'SEMICOLON', []],       # Fin expr
-    [7, 'RPAREN', []]           # Fin expr
-]
-
