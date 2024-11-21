@@ -6,53 +6,6 @@
 
 
 ############################################################
-#         TABLA: Variables, Operadores aritmeticos         #
-############################################################
-tabla_variables = [
-    #Producción para S: permite que S procese declaraciones y asignaciones
-    [0, 'int', [1, 'identificador', 2, 0]],       #int x; y continúa con otra declaración o asignación
-    [0, 'float', [1, 'identificador', 2, 0]],     #float y; y continúa con otra declaración o asignación
-    [0, 'char', [1, 'identificador', 2, 0]],      #char z; y continúa con otra declaración o asignación
-    [0, 'identificador', [3, 0]],                 #Asignación: x = 5; y continúa con otra declaración o asignación
-    [0, 'eof', ['eof']],                          #Fin de entrada, permite que termine en eof
-
-    #Producción para TT: maneja tipos de datos
-    [1, 'int', ['int']],
-    [1, 'float', ['float']],
-    [1, 'char', ['char']],
-
-    #Producción para D: maneja el final de la declaración o más identificadores con asignación opcional
-    [2, 'finInstruccion', ['finInstruccion']],              #Fin de instrucción, por ejemplo: x;
-    [2, 'asignacion', ['asignacion', 5, 'finInstruccion']], #Asignación inicial con expresiones: x = 5 + 3;
-    [2, 'coma', ['coma', 'identificador', 2]],              #Coma para una lista de identificadores, por ejemplo: x, y;
-
-    #Producción para asignaciones (acepta expresiones aritméticas)
-    [3, 'identificador', ['identificador', 'asignacion', 5, 'finInstruccion']],
-
-    #Producción para valores asignables (acepta números y literales de caracteres)
-    [4, 'NUMBER', ['NUMBER']],           #Valores asignables como números
-    [4, 'char_literal', ['char_literal']],  #Valores asignables como literales de caracteres
-
-    #Producción para expresiones (E)
-    [5, 'NUMBER', [6]],                     #E -> T
-    [5, 'identificador', [6]],              #E -> T
-    [5, 'LPAREN', ['LPAREN', 5, 'RPAREN']], #E -> (E)
-    [5, 'char_literal', [4]],               #E -> char_literal
-
-    #Producción para T (términos con operadores)
-    [6, 'NUMBER', ['NUMBER', 7]],           #T -> F T'
-    [6, 'identificador', ['identificador', 7]], #T -> F T'
-    [6, 'char_literal', ['char_literal', 7]],   #T -> F T' 
-    [7, 'PLUS', ['PLUS', 6, 7]],            #T' -> + T T'
-    [7, 'MINUS', ['MINUS', 6, 7]],          #T' -> - T T'
-    [7, 'TIMES', ['TIMES', 6, 7]],          #T' -> * T T'
-    [7, 'DIVIDE', ['DIVIDE', 6, 7]],        #T' -> / T T'
-    [7, 'finInstruccion', []],              #T' -> ε
-    [7, 'RPAREN', []]                   #T' -> ε para finalizar con paréntesis
-   
-]
-
-############################################################
 #                   TABLA: Comentarios                     #
 ############################################################
 tabla_comentarios = [ #Tabla LL(1) de producciones para comentarios
@@ -166,40 +119,209 @@ tabla_while = [ #Tabla LL(1) de producciones para ciclos while
     [3, 'RPAREN', []],               #Fin de la condición
 ]
 
-############################################################
-#                      TABLA: Funciones                    #
-############################################################
-tabla_funciones = [
-    #Producción principal para declaración/definición de funciones
-    [0, 'void', ['void', 'identificador', 'LPAREN', 1, 'RPAREN', 3, 0]],   #void func() { Bloque }
-    [0, 'int', ['int', 'identificador', 'LPAREN', 1, 'RPAREN', 3, 0]],     #int func() { Bloque }
-    [0, 'float', ['float', 'identificador', 'LPAREN', 1, 'RPAREN', 3, 0]], #float func() { Bloque }
-    [0, 'eof', ['eof']],                                                  #Fin del archivo
+##################################################################################################
+#       TABLA UNIFICADA ACTUALIZADA DE PRODUCCIONES LL(1) PARA VARIABLES Y FUNCIONES             #
+##################################################################################################
 
-    #Producción para parámetros dentro de ( )
-    [1, 'int', ['int', 'identificador', 2]],       #int x
-    [1, 'float', ['float', 'identificador', 2]],   #float y
-    [1, 'char', ['char', 'identificador', 2]],     #char z
-    [1, 'RPAREN', []],                             #Sin parámetros (ε)
+tabla_unificada = [
+    #Producción inicial S: procesa declaraciones, definiciones de funciones y asignaciones
+    [0, 'int', [1, 'identificador', 2, 0]],
+    [0, 'float', [1, 'identificador', 2, 0]],
+    [0, 'char', [1, 'identificador', 2, 0]],
+    [0, 'void', [1, 'identificador', 2, 0]],
+    [0, 'identificador', [7, 0]],  #Para asignaciones y expresiones
+    [0, 'return', [15, 0]],        #Para sentencias return
+    [0, 'if', [9, 0]],             #Estructuras if
+    [0, 'while', [10, 0]],         #Estructuras while
+    [0, 'printf', [16, 0]],        #Sentencias printf
+    [0, 'scanf', [17, 0]],         #Sentencias scanf
+    [0, 'comentario', [14, 0]],    #Comentarios
+    [0, 'comentario_bloque', [14, 0]], #Comentarios de bloque
+    [0, 'inicioBloque', ['inicioBloque', 0, 'finBloque']],  #Bloques anidados
+    [0, 'finBloque', []],          #Permite cerrar bloques
+    [0, 'eof', ['eof']],           #Fin del archivo
 
-    #Producción para lista de parámetros
-    [2, 'coma', ['coma', 1]],                      #, siguiente parámetro
-    [2, 'RPAREN', []],                             #Fin de la lista (ε)
+    #Producción para Type: tipos de datos
+    [1, 'int', ['int']],
+    [1, 'float', ['float']],
+    [1, 'char', ['char']],
+    [1, 'void', ['void']],
 
-    #Producción para el bloque o cuerpo de la función
-    [3, 'inicioBloque', ['inicioBloque', 4, 'finBloque']],  #{ Cuerpo de la función }
+    #Producción para DeclarationPrime: decide entre función o variable
+    [2, 'LPAREN', ['LPAREN', 3, 'RPAREN', 4]],   #Función
+    [2, 'asignacion', [5]],                      #Variable con asignación
+    [2, 'coma', [6]],                            #Lista de variables
+    [2, 'finInstruccion', ['finInstruccion']],   #Fin de declaración de variable
 
-    #Producción para instrucciones dentro del cuerpo
-    [4, 'int', [0]],              #Reutiliza la tabla de variables
-    [4, 'float', [0]],            #Reutiliza la tabla de variables
-    [4, 'char', [0]],             #Reutiliza la tabla de variables
-    [4, 'identificador', [0]],    #Reutiliza la tabla de asignaciones
-    [4, 'printf', [0]],           #Reutiliza la tabla de scanf/printf
-    [4, 'scanf', [0]],            #Reutiliza la tabla de scanf/printf
-    [4, 'if', [0]],               #Reutiliza la tabla de condicionales
-    [4, 'while', [0]],            #Reutiliza la tabla de ciclos
-    [4, 'comentario', [0]],       #Reutiliza la tabla de comentarios
-    [4, 'comentario_bloque', [0]],#Reutiliza la tabla de comentarios
-    [4, 'finBloque', []],         #Permite cerrar el bloque
-    [4, 'eof', []],               #Termina al final del archivo
+    #Producción para ParameterList: parámetros de función
+    [3, 'int', [1, 'identificador', 8]],
+    [3, 'float', [1, 'identificador', 8]],
+    [3, 'char', [1, 'identificador', 8]],
+    [3, 'RPAREN', []],  #Sin parámetros (ε)
+
+    #Producción para ParameterListPrime: más parámetros
+    [8, 'coma', ['coma', 3]],
+    [8, 'RPAREN', []],  #Fin de la lista de parámetros
+
+    #Producción para Block: cuerpo de la función
+    [4, 'inicioBloque', ['inicioBloque', 11, 'finBloque']],  #Usamos 11 para las sentencias dentro del bloque
+
+    #Producción para VariableDeclarator (asignación opcional)
+    [5, 'asignacion', ['asignacion', 9, 10]],
+    [5, 'finInstruccion', ['finInstruccion']],
+    [5, 'coma', [6]],
+
+    #Producción para VariableDeclaratorList: lista de variables
+    [6, 'coma', ['coma', 'identificador', 5]],
+    [6, 'finInstruccion', ['finInstruccion']],
+
+    #Producción para Expression: E
+    [9, 'identificador', [12]],
+    [9, 'NUMBER', [12]],
+    [9, 'FLOAT', [12]],
+    [9, 'LPAREN', [12]],
+    [9, 'char_literal', [12]],
+
+    #Producción para E_rel: E_add E_rel'
+    [12, 'identificador', [22, 23]],
+    [12, 'NUMBER', [22, 23]],
+    [12, 'FLOAT', [22, 23]],
+    [12, 'LPAREN', [22, 23]],
+    [12, 'char_literal', [22, 23]],
+
+    #Producción para E_rel': ('>' | '<') E_add E_rel' | ε
+    [23, 'GREATER', ['GREATER', 22, 23]],
+    [23, 'LESS', ['LESS', 22, 23]],
+    [23, 'PLUS', []],
+    [23, 'MINUS', []],
+    [23, 'TIMES', []],
+    [23, 'DIVIDE', []],
+    [23, 'finInstruccion', []],
+    [23, 'coma', []],
+    [23, 'RPAREN', []],
+    [23, 'finBloque', []],
+
+    #Producción para E_add: E_mul E_add'
+    [22, 'identificador', [24, 25]],
+    [22, 'NUMBER', [24, 25]],
+    [22, 'FLOAT', [24, 25]],
+    [22, 'LPAREN', [24, 25]],
+    [22, 'char_literal', [24, 25]],
+
+    #Producción para E_add': ('+' | '-') E_mul E_add' | ε
+    [25, 'PLUS', ['PLUS', 24, 25]],
+    [25, 'MINUS', ['MINUS', 24, 25]],
+    [25, 'GREATER', []],
+    [25, 'LESS', []],
+    [25, 'finInstruccion', []],
+    [25, 'coma', []],
+    [25, 'RPAREN', []],
+    [25, 'finBloque', []],
+
+    #Producción para E_mul: E_unary E_mul'
+    [24, 'identificador', [26, 27]],
+    [24, 'NUMBER', [26, 27]],
+    [24, 'FLOAT', [26, 27]],
+    [24, 'LPAREN', [26, 27]],
+    [24, 'char_literal', [26, 27]],
+
+    #Producción para E_mul': ('*' | '/') E_unary E_mul' | ε
+    [27, 'TIMES', ['TIMES', 26, 27]],
+    [27, 'DIVIDE', ['DIVIDE', 26, 27]],
+    [27, 'PLUS', []],
+    [27, 'MINUS', []],
+    [27, 'GREATER', []],
+    [27, 'LESS', []],
+    [27, 'finInstruccion', []],
+    [27, 'coma', []],
+    [27, 'RPAREN', []],
+    [27, 'finBloque', []],
+
+    #Producción para E_unary
+    [26, 'identificador', [28]],
+    [26, 'NUMBER', [28]],
+    [26, 'FLOAT', [28]],
+    [26, 'LPAREN', [28]],
+    [26, 'char_literal', [28]],
+
+    #Producción para Primary
+    [28, 'identificador', ['identificador']],
+    [28, 'NUMBER', ['NUMBER']],
+    [28, 'FLOAT', ['FLOAT']],
+    [28, 'LPAREN', ['LPAREN', 9, 'RPAREN']],
+    [28, 'char_literal', ['char_literal']],
+
+    #Producción para continuar después de la asignación/expresión
+    [10, 'coma', [6]],
+    [10, 'finInstruccion', ['finInstruccion']],
+
+    #Producción para asignaciones y expresiones (Statement)
+    [7, 'identificador', ['identificador', 'asignacion', 9, 'finInstruccion']],
+
+    #Producción para comentarios
+    [14, 'comentario', ['comentario']],
+    [14, 'comentario_bloque', ['comentario_bloque']],
+
+    #Producción para sentencias return
+    [15, 'return', ['return', 18, 'finInstruccion']],
+
+    #Producción para expresión opcional en return
+    [18, 'identificador', [9]],
+    [18, 'NUMBER', [9]],
+    [18, 'FLOAT', [9]],
+    [18, 'LPAREN', [9]],
+    [18, 'char_literal', [9]],
+    [18, 'finInstruccion', []],  # Permite 'return;' sin expresión
+
+    #Producción para estructuras if
+    [9, 'if', ['if', 'LPAREN', 9, 'RPAREN', 'inicioBloque', 11, 'finBloque', 19]],
+
+    #Producción para else opcional
+    [19, 'else', ['else', 'inicioBloque', 11, 'finBloque']],
+    [19, 'int', []],
+    [19, 'float', []],
+    [19, 'char', []],
+    [19, 'identificador', []],
+    [19, 'return', []],
+    [19, 'if', []],
+    [19, 'while', []],
+    [19, 'printf', []],
+    [19, 'scanf', []],
+    [19, 'comentario', []],
+    [19, 'comentario_bloque', []],
+    [19, 'finBloque', []],
+    [19, 'eof', []],
+
+    #Producción para estructuras while
+    [10, 'while', ['while', 'LPAREN', 9, 'RPAREN', 'inicioBloque', 11, 'finBloque']],
+
+    #Producción para sentencias printf
+    [16, 'printf', ['printf', 'LPAREN', 'cadena', 20, 'RPAREN', 'finInstruccion']],
+
+    #Producción para lista de argumentos en printf
+    [20, 'coma', ['coma', 9]],
+    [20, 'RPAREN', []],
+
+    #Producción para sentencias scanf
+    [17, 'scanf', ['scanf', 'LPAREN', 'cadena', 'coma', '&', 'identificador', 21, 'RPAREN', 'finInstruccion']],
+
+    #Producción para lista de variables en scanf
+    [21, 'coma', ['coma', '&', 'identificador', 21]],
+    [21, 'RPAREN', []],
+
+    #Producción para sentencias dentro del bloque de la función
+    [11, 'int', [1, 'identificador', 2, 11]],          #Declaraciones de variables
+    [11, 'float', [1, 'identificador', 2, 11]],
+    [11, 'char', [1, 'identificador', 2, 11]],
+    [11, 'void', [1, 'identificador', 2, 11]],         #Funciones anidadas si se permite
+    [11, 'identificador', [7, 11]],                    #Asignaciones
+    [11, 'return', [15, 11]],                          #Sentencias return
+    [11, 'if', [9, 11]],                               #Estructuras if
+    [11, 'while', [10, 11]],                           #Estructuras while
+    [11, 'printf', [16, 11]],                          #Sentencias printf
+    [11, 'scanf', [17, 11]],                           #Sentencias scanf
+    [11, 'comentario', [14, 11]],                      #Comentarios
+    [11, 'comentario_bloque', [14, 11]],               #Comentarios de bloque
+    [11, 'finBloque', []],                             #Fin del bloque
+    [11, 'eof', []],                                   #Fin del archivo
 ]

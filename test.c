@@ -1,24 +1,29 @@
-int x, y, z, c;         
-float pi = 3.14;
-char letter = 'a';
-int resultado;
+int x,z;
+float y = 3.0;
 
-printf("Hola mundo\n"); 
-
-
-void saludar() {
-    printf("Hola mundo\n");  
-    // Comentario de una linea 
-    if (x > 5) {
-        printf("x es mayor a 5\n");
+int suma(int a, int b) {
+    //comentario
+    int resultado = a + b;
+    if(a > b) {
+        resultado = a - b;
+    } else {
+        resultado = a + b;
     }
 
-    int c,xs;
+    while (a < b) {
+        a = a + 1;
+    }
+
+    /*esto es un comentario
+    de varias lineas*/
+    
+    return resultado;
 }
 
+int main(){
+    return 0;
+}
 
-// Comentario de una linea
- 
- if (resultado > 5) {
-    printf("El resultado es mayor a 5\n");
- }
+void saludo() {
+    printf("Hola mundo");
+}
