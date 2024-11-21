@@ -3,9 +3,9 @@ float y = 3.0;
 
 int suma(int a, int b) {
     //comentario
-    int resultado = a + b;
+    int resultado;
     if(a > b) {
-        resultado = a - b;
+        resultado = a -+ b;
     } else {
         resultado = a + b;
     }

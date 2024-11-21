@@ -17,6 +17,10 @@ tablas_ll1 = {
     "tabla_while": tabla_while
 }
 
+#Lista de puntos de sincronización
+puntos_sincronizacion = ['finInstruccion', 'finBloque', 'inicioBloque', 'if', 'while', 'for', 'return', 'eof']
+
+
 stack = ['eof', 0]
 
 #Construye el lexer
@@ -26,6 +30,8 @@ lexer = lex.lex()
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
+
+
 
 
 def print_tokens_table(tokens):
@@ -41,20 +47,20 @@ def miParser(nombre_archivo):
             fuente = f.read() + '$'
         
         lexer.input(fuente)
-        lexer.lineno = 1  #Reiniciar el número de línea
+        lexer.lineno = 1  # Reiniciar el número de línea
         
-        #Obtener todos los tokens en una lista para mostrarlos en una tabla
+        # Obtener todos los tokens en una lista para mostrarlos en una tabla
         tokens = []
         tok = lexer.token()
         while tok:
             tokens.append(tok)
             tok = lexer.token()
         
-        #Imprimir los tokens
+        # Imprimir los tokens
         print("\n" + colored("<<<<<<<<<<<<<<<<< Tabla de Tokens >>>>>>>>>>>>>>>>>", "yellow", attrs=['bold']))
         print_tokens_table(tokens)
         
-        #Reiniciar el lexer para procesar los tokens en el parser
+        # Reiniciar el lexer para procesar los tokens en el parser
         lexer.input(fuente)
         lexer.lineno = 1  
         tok = lexer.token()
@@ -77,21 +83,33 @@ def miParser(nombre_archivo):
                 print(colored("\nArchivo terminado exitosamente. No se encontraron errores sintácticos.", "green", attrs=['bold']))
                 return
             elif x == tok.type and x != 'eof':
-                #Coincidencia exacta entre el token y el top de la pila
+                # Coincidencia exacta entre el token y el top de la pila
                 stack.pop()
-                x = stack[-1]
+                if stack:
+                    x = stack[-1]
+                else:
+                    x = None
                 tok = lexer.token()
             elif x == 'finBloque':
-                #Validar cierre de bloque
+                # Validar cierre de bloque
                 if tok.type == 'finBloque':
                     stack.pop()
                     tok = lexer.token()
                     if stack:
                         x = stack[-1]
+                    else:
+                        x = None
                 else:
                     print(colored(f"\nError: Se esperaba 'finBloque', pero se encontró {tok.type}.", "red", attrs=['bold']))
                     print(colored(f"Línea: {tok.lineno}", "yellow"))
-                    return
+                    # Modo pánico
+                    tok = modo_panico(tok, puntos_sincronizacion, stack)
+                    if not tok or tok.type == 'eof':
+                        break  # Fin del archivo
+                    if stack:
+                        x = stack[-1]
+                    else:
+                        x = None
             elif x not in tokens:
                 celda = None
                 for nombre_tabla, tabla in tablas_ll1.items():
@@ -102,20 +120,68 @@ def miParser(nombre_archivo):
                 if celda is None:
                     print(colored(f"\nError: NO se esperaba {tok.type}", "red", attrs=['bold']))
                     print(colored(f"Línea: {tok.lineno}", "yellow"))
-                    return
+                    # Modo pánico
+                    tok = modo_panico(tok, puntos_sincronizacion, stack)
+                    if not tok or tok.type == 'eof':
+                        break  # Fin del archivo
+                    if stack:
+                        x = stack[-1]
+                    else:
+                        x = None
+                    continue
                 else:
                     stack.pop()
                     agregar_pila(celda)
-                    x = stack[-1]
+                    if stack:
+                        x = stack[-1]
+                    else:
+                        x = None
             else:
                 print(colored(f"Error: Se esperaba {x} pero se encontró {tok.type}", "red"))
                 print(colored(f"Línea: {tok.lineno}", "yellow"))
                 print(colored("Pila actual:", "magenta"), stack)
-                return
+                # Modo pánico
+                tok = modo_panico(tok, puntos_sincronizacion, stack)
+                if not tok or tok.type == 'eof':
+                    break  # Fin del archivo
+                if stack:
+                    x = stack[-1]
+                else:
+                    x = None
     except FileNotFoundError:
         print(colored(f"El archivo '{nombre_archivo}' no se encontró.", "red"))
     except Exception as e:
         print(colored(f"Ocurrió un error: {e}", "red"))
+
+def modo_panico(tok, puntos_sincronizacion, stack):
+    print(colored("Entrando en modo pánico...", "yellow"))
+    # Avanzar tokens hasta encontrar un punto de sincronización
+    while tok and tok.type not in puntos_sincronizacion:
+        tok = lexer.token()
+    if tok:
+        print(colored(f"Recuperado en token: {tok.type}", "yellow"))
+        # Ajustar la pila del parser
+        ajustar_pila_para_recuperacion(stack, tok)
+    else:
+        print(colored("Fin del archivo alcanzado durante la recuperación.", "yellow"))
+    return tok
+
+def ajustar_pila_para_recuperacion(stack, tok):
+    while stack:
+        x = stack[-1]
+        # Si x puede derivar al token actual, dejamos de desapilar
+        if x in tokens or puede_derivar(x, tok.type):
+            break
+        else:
+            stack.pop()
+
+def puede_derivar(no_terminal, terminal):
+    for tabla in tablas_ll1.values():
+        for produccion in tabla:
+            if produccion[0] == no_terminal and produccion[1] == terminal:
+                return True
+    return False
+
 
 def buscar_en_tabla(no_terminal, terminal, tabla):
     for i in range(len(tabla)):
