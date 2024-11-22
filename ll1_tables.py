@@ -303,11 +303,12 @@ tabla_unificada = [
     [20, 'RPAREN', []],
 
     #Producción para sentencias scanf
-    [17, 'scanf', ['scanf', 'LPAREN', 'cadena', 'coma', '&', 'identificador', 21, 'RPAREN', 'finInstruccion']],
+    [17, 'scanf', ['scanf', 'LPAREN', 'cadena', 'coma', 'AMPERSAND', 'identificador', 21, 'RPAREN', 'finInstruccion']],
 
     #Producción para lista de variables en scanf
-    [21, 'coma', ['coma', '&', 'identificador', 21]],
+    [21, 'coma', ['coma', 'AMPERSAND', 'identificador', 21]],
     [21, 'RPAREN', []],
+
 
     #Producción para sentencias dentro del bloque de la función
     [11, 'int', [1, 'identificador', 2, 11]],          #Declaraciones de variables

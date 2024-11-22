@@ -1,6 +1,5 @@
 int x,z;
 float y = 3.0;
-char ;
 
 int suma(int a, int b) {
     //comentario
@@ -8,7 +7,7 @@ int suma(int a, int b) {
     if(a > b) {
         resultado = a - b;
     } else {
-        resultado = a +- b;
+        resultado = a + b;
     }
 
     while (a < b) {
@@ -21,10 +20,17 @@ int suma(int a, int b) {
     return resultado;
 }
 
-int main(){
-    return 0;
-}
-
 void saludo() {
     printf("Hola mundo");
+}
+
+int main(){
+    int num1, num2, resultado;
+    printf("Ingrese el primer número: ");
+    scanf("%d", &num1);
+
+    //resultado = suma(num1, num2);
+
+    //saludo();
+    return 0;
 }
