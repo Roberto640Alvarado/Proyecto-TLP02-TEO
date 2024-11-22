@@ -20,6 +20,7 @@ tablas_ll1 = {
 #Lista de puntos de sincronización
 puntos_sincronizacion = ['finInstruccion', 'finBloque', 'inicioBloque', 'if', 'while', 'for', 'return', 'eof']
 
+errores = []  #Lista para almacenar errores
 
 stack = ['eof', 0]
 
@@ -32,8 +33,6 @@ def t_newline(t):
     t.lexer.lineno += len(t.value)
 
 
-
-
 def print_tokens_table(tokens):
     headers = ["ID", "Tipo", "Valor", "Línea", "Posición"]
     formatted_data = [[idx + 1, tok.type, tok.value, tok.lineno, tok.lexpos] for idx, tok in enumerate(tokens)]
@@ -41,26 +40,36 @@ def print_tokens_table(tokens):
     table = tabulate(formatted_data, headers, tablefmt="fancy_grid")
     print(colored(table, "green"))
 
+def print_errors_table(errores):
+    if errores:
+        print("\n" + colored("<<<<<<<<<<<<<<<<< Tabla de Errores >>>>>>>>>>>>>>>>>", "red", attrs=['bold']))
+        headers = ["Descripción", "Línea"]
+        formatted_data = [[error["descripcion"], error["linea"]] for error in errores]
+        table = tabulate(formatted_data, headers, tablefmt="fancy_grid")
+        print(colored(table, "red"))
+    else:
+        print(colored("\nNo se encontraron errores sintácticos.", "green", attrs=['bold']))
+
 def miParser(nombre_archivo):
     try:
         with open(nombre_archivo, 'r') as f:
             fuente = f.read() + '$'
         
         lexer.input(fuente)
-        lexer.lineno = 1  # Reiniciar el número de línea
+        lexer.lineno = 1  #Reiniciar el número de línea
         
-        # Obtener todos los tokens en una lista para mostrarlos en una tabla
+        #Obtener todos los tokens en una lista para mostrarlos en una tabla
         tokens = []
         tok = lexer.token()
         while tok:
             tokens.append(tok)
             tok = lexer.token()
         
-        # Imprimir los tokens
+        #Imprimir los tokens
         print("\n" + colored("<<<<<<<<<<<<<<<<< Tabla de Tokens >>>>>>>>>>>>>>>>>", "yellow", attrs=['bold']))
         print_tokens_table(tokens)
         
-        # Reiniciar el lexer para procesar los tokens en el parser
+        #Reiniciar el lexer para procesar los tokens en el parser
         lexer.input(fuente)
         lexer.lineno = 1  
         tok = lexer.token()
@@ -78,12 +87,14 @@ def miParser(nombre_archivo):
             
             if x == tok.type and x == 'eof':
                 if 'finBloque' in stack:
-                    print(colored(f"\nError: Falta 'finBloque' antes de finalizar el archivo.", "red", attrs=['bold']))
-                    return
-                print(colored("\nArchivo terminado exitosamente. No se encontraron errores sintácticos.", "green", attrs=['bold']))
-                return
+                    error_msg = f"Error: Falta 'finBloque' antes de finalizar el archivo."
+                    print(colored(f"\n{error_msg}", "red", attrs=['bold']))
+                    errores.append({"descripcion": error_msg, "linea": tok.lineno})
+                    break
+                print(colored("\nArchivo terminado exitosamente.", "green", attrs=['bold']))
+                break
             elif x == tok.type and x != 'eof':
-                # Coincidencia exacta entre el token y el top de la pila
+                #Coincidencia exacta entre el token y el top de la pila
                 stack.pop()
                 if stack:
                     x = stack[-1]
@@ -91,7 +102,7 @@ def miParser(nombre_archivo):
                     x = None
                 tok = lexer.token()
             elif x == 'finBloque':
-                # Validar cierre de bloque
+                #Validar cierre de bloque
                 if tok.type == 'finBloque':
                     stack.pop()
                     tok = lexer.token()
@@ -100,12 +111,14 @@ def miParser(nombre_archivo):
                     else:
                         x = None
                 else:
-                    print(colored(f"\nError: Se esperaba 'finBloque', pero se encontró {tok.type}.", "red", attrs=['bold']))
+                    error_msg = f"Error: Se esperaba 'finBloque', pero se encontró {tok.type}."
+                    print(colored(f"\n{error_msg}", "red", attrs=['bold']))
                     print(colored(f"Línea: {tok.lineno}", "yellow"))
-                    # Modo pánico
+                    errores.append({"descripcion": error_msg, "linea": tok.lineno})
+                    #Modo pánico
                     tok = modo_panico(tok, puntos_sincronizacion, stack)
                     if not tok or tok.type == 'eof':
-                        break  # Fin del archivo
+                        break  #Fin del archivo
                     if stack:
                         x = stack[-1]
                     else:
@@ -118,12 +131,14 @@ def miParser(nombre_archivo):
                         print(colored(f"Producción encontrada: {x} -> {celda}", "blue"))
                         break
                 if celda is None:
-                    print(colored(f"\nError: NO se esperaba {tok.type}", "red", attrs=['bold']))
+                    error_msg = f"Error: NO se esperaba '{tok.type}'."
+                    print(colored(f"\n{error_msg}", "red", attrs=['bold']))
                     print(colored(f"Línea: {tok.lineno}", "yellow"))
-                    # Modo pánico
+                    errores.append({"descripcion": error_msg, "linea": tok.lineno})
+                    #Modo pánico
                     tok = modo_panico(tok, puntos_sincronizacion, stack)
                     if not tok or tok.type == 'eof':
-                        break  # Fin del archivo
+                        break  #Fin del archivo
                     if stack:
                         x = stack[-1]
                     else:
@@ -137,17 +152,21 @@ def miParser(nombre_archivo):
                     else:
                         x = None
             else:
-                print(colored(f"Error: Se esperaba {x} pero se encontró {tok.type}", "red"))
+                error_msg = f"Error: Se esperaba '{x}' pero se encontró '{tok.type}'."
+                print(colored(f"{error_msg}", "red"))
                 print(colored(f"Línea: {tok.lineno}", "yellow"))
                 print(colored("Pila actual:", "magenta"), stack)
-                # Modo pánico
+                errores.append({"descripcion": error_msg, "linea": tok.lineno})
+                #Modo pánico
                 tok = modo_panico(tok, puntos_sincronizacion, stack)
                 if not tok or tok.type == 'eof':
-                    break  # Fin del archivo
+                    break  #Fin del archivo
                 if stack:
                     x = stack[-1]
                 else:
                     x = None
+        #Mostrar la tabla de errores al final
+        print_errors_table(errores)
     except FileNotFoundError:
         print(colored(f"El archivo '{nombre_archivo}' no se encontró.", "red"))
     except Exception as e:
@@ -155,12 +174,12 @@ def miParser(nombre_archivo):
 
 def modo_panico(tok, puntos_sincronizacion, stack):
     print(colored("Entrando en modo pánico...", "yellow"))
-    # Avanzar tokens hasta encontrar un punto de sincronización
+    #Avanzar tokens hasta encontrar un punto de sincronización
     while tok and tok.type not in puntos_sincronizacion:
         tok = lexer.token()
     if tok:
         print(colored(f"Recuperado en token: {tok.type}", "yellow"))
-        # Ajustar la pila del parser
+        #Ajustar la pila del parser
         ajustar_pila_para_recuperacion(stack, tok)
     else:
         print(colored("Fin del archivo alcanzado durante la recuperación.", "yellow"))
@@ -169,11 +188,16 @@ def modo_panico(tok, puntos_sincronizacion, stack):
 def ajustar_pila_para_recuperacion(stack, tok):
     while stack:
         x = stack[-1]
-        # Si x puede derivar al token actual, dejamos de desapilar
-        if x in tokens or puede_derivar(x, tok.type):
+        #Si x es un terminal y coincide con el token actual, dejamos de desapilar
+        if x == tok.type:
+            break
+        #Si x puede derivar al token actual, dejamos de desapilar
+        elif x not in tokens and puede_derivar(x, tok.type):
             break
         else:
             stack.pop()
+    if not stack:
+        print(colored("La pila está vacía después de la recuperación.", "red"))
 
 def puede_derivar(no_terminal, terminal):
     for tabla in tablas_ll1.values():
@@ -181,7 +205,6 @@ def puede_derivar(no_terminal, terminal):
             if produccion[0] == no_terminal and produccion[1] == terminal:
                 return True
     return False
-
 
 def buscar_en_tabla(no_terminal, terminal, tabla):
     for i in range(len(tabla)):
