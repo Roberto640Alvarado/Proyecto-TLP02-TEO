@@ -32,7 +32,6 @@ def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
-
 def print_tokens_table(tokens):
     headers = ["ID", "Tipo", "Valor", "Línea", "Posición"]
     formatted_data = [[idx + 1, tok.type, tok.value, tok.lineno, tok.lexpos] for idx, tok in enumerate(tokens)]

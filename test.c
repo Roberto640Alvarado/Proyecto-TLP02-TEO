@@ -29,8 +29,8 @@ int main(){
     printf("Ingrese el primer número: ");
     scanf("%d", &num1);
 
-    //resultado = suma(num1, num2);
+    resultado = suma(num1, num2);
 
-    //saludo();
+    saludo();
     return 0;
 }

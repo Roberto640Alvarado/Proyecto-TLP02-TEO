@@ -159,10 +159,6 @@ tabla_unificada = [
     [3, 'char', [1, 'identificador', 8]],
     [3, 'RPAREN', []],  #Sin parámetros (ε)
 
-    #Producción para ParameterListPrime: más parámetros
-    [8, 'coma', ['coma', 3]],
-    [8, 'RPAREN', []],  #Fin de la lista de parámetros
-
     #Producción para Block: cuerpo de la función
     [4, 'inicioBloque', ['inicioBloque', 11, 'finBloque']],  #Usamos 11 para las sentencias dentro del bloque
 
@@ -175,12 +171,43 @@ tabla_unificada = [
     [6, 'coma', ['coma', 'identificador', 5]],
     [6, 'finInstruccion', ['finInstruccion']],
 
+    #Producción para asignaciones y expresiones (Statement)
+    [7, 'identificador', ['identificador', 32]],
+
+    #Producción para ParameterListPrime: más parámetros
+    [8, 'coma', ['coma', 3]],
+    [8, 'RPAREN', []],  #Fin de la lista de parámetros
+
     #Producción para Expression: E
     [9, 'identificador', [12]],
     [9, 'NUMBER', [12]],
     [9, 'FLOAT', [12]],
     [9, 'LPAREN', [12]],
     [9, 'char_literal', [12]],
+    #Producción para estructuras if
+    [9, 'if', ['if', 'LPAREN', 9, 'RPAREN', 'inicioBloque', 11, 'finBloque', 19]],
+
+    #Producción para continuar después de la asignación/expresión
+    [10, 'coma', [6]],
+    [10, 'finInstruccion', ['finInstruccion']],
+    #Producción para estructuras while
+    [10, 'while', ['while', 'LPAREN', 9, 'RPAREN', 'inicioBloque', 11, 'finBloque']],
+
+        #Producción para sentencias dentro del bloque de la función
+    [11, 'int', [1, 'identificador', 2, 11]],          #Declaraciones de variables
+    [11, 'float', [1, 'identificador', 2, 11]],
+    [11, 'char', [1, 'identificador', 2, 11]],
+    [11, 'void', [1, 'identificador', 2, 11]],         #Funciones anidadas si se permite
+    [11, 'identificador', [7, 11]],                    #Asignaciones
+    [11, 'return', [15, 11]],                          #Sentencias return
+    [11, 'if', [9, 11]],                               #Estructuras if
+    [11, 'while', [10, 11]],                           #Estructuras while
+    [11, 'printf', [16, 11]],                          #Sentencias printf
+    [11, 'scanf', [17, 11]],                           #Sentencias scanf
+    [11, 'comentario', [14, 11]],                      #Comentarios
+    [11, 'comentario_bloque', [14, 11]],               #Comentarios de bloque
+    [11, 'finBloque', []],                             #Fin del bloque
+    [11, 'eof', []],                                 #Fin del archivo
 
     #Producción para E_rel: E_add E_rel'
     [12, 'identificador', [22, 23]],
@@ -189,81 +216,18 @@ tabla_unificada = [
     [12, 'LPAREN', [22, 23]],
     [12, 'char_literal', [22, 23]],
 
-    #Producción para E_rel': ('>' | '<') E_add E_rel' | ε
-    [23, 'GREATER', ['GREATER', 22, 23]],
-    [23, 'LESS', ['LESS', 22, 23]],
-    [23, 'PLUS', []],
-    [23, 'MINUS', []],
-    [23, 'TIMES', []],
-    [23, 'DIVIDE', []],
-    [23, 'finInstruccion', []],
-    [23, 'coma', []],
-    [23, 'RPAREN', []],
-    [23, 'finBloque', []],
-
-    #Producción para E_add: E_mul E_add'
-    [22, 'identificador', [24, 25]],
-    [22, 'NUMBER', [24, 25]],
-    [22, 'FLOAT', [24, 25]],
-    [22, 'LPAREN', [24, 25]],
-    [22, 'char_literal', [24, 25]],
-
-    #Producción para E_add': ('+' | '-') E_mul E_add' | ε
-    [25, 'PLUS', ['PLUS', 24, 25]],
-    [25, 'MINUS', ['MINUS', 24, 25]],
-    [25, 'GREATER', []],
-    [25, 'LESS', []],
-    [25, 'finInstruccion', []],
-    [25, 'coma', []],
-    [25, 'RPAREN', []],
-    [25, 'finBloque', []],
-
-    #Producción para E_mul: E_unary E_mul'
-    [24, 'identificador', [26, 27]],
-    [24, 'NUMBER', [26, 27]],
-    [24, 'FLOAT', [26, 27]],
-    [24, 'LPAREN', [26, 27]],
-    [24, 'char_literal', [26, 27]],
-
-    #Producción para E_mul': ('*' | '/') E_unary E_mul' | ε
-    [27, 'TIMES', ['TIMES', 26, 27]],
-    [27, 'DIVIDE', ['DIVIDE', 26, 27]],
-    [27, 'PLUS', []],
-    [27, 'MINUS', []],
-    [27, 'GREATER', []],
-    [27, 'LESS', []],
-    [27, 'finInstruccion', []],
-    [27, 'coma', []],
-    [27, 'RPAREN', []],
-    [27, 'finBloque', []],
-
-    #Producción para E_unary
-    [26, 'identificador', [28]],
-    [26, 'NUMBER', [28]],
-    [26, 'FLOAT', [28]],
-    [26, 'LPAREN', [28]],
-    [26, 'char_literal', [28]],
-
-    #Producción para Primary
-    [28, 'identificador', ['identificador']],
-    [28, 'NUMBER', ['NUMBER']],
-    [28, 'FLOAT', ['FLOAT']],
-    [28, 'LPAREN', ['LPAREN', 9, 'RPAREN']],
-    [28, 'char_literal', ['char_literal']],
-
-    #Producción para continuar después de la asignación/expresión
-    [10, 'coma', [6]],
-    [10, 'finInstruccion', ['finInstruccion']],
-
-    #Producción para asignaciones y expresiones (Statement)
-    [7, 'identificador', ['identificador', 'asignacion', 9, 'finInstruccion']],
-
     #Producción para comentarios
     [14, 'comentario', ['comentario']],
     [14, 'comentario_bloque', ['comentario_bloque']],
 
     #Producción para sentencias return
     [15, 'return', ['return', 18, 'finInstruccion']],
+
+    #Producción para sentencias printf
+    [16, 'printf', ['printf', 'LPAREN', 'cadena', 20, 'RPAREN', 'finInstruccion']],
+
+    #Producción para sentencias scanf
+    [17, 'scanf', ['scanf', 'LPAREN', 'cadena', 'coma', 'AMPERSAND', 'identificador', 21, 'RPAREN', 'finInstruccion']],
 
     #Producción para expresión opcional en return
     [18, 'identificador', [9]],
@@ -272,9 +236,6 @@ tabla_unificada = [
     [18, 'LPAREN', [9]],
     [18, 'char_literal', [9]],
     [18, 'finInstruccion', []],  # Permite 'return;' sin expresión
-
-    #Producción para estructuras if
-    [9, 'if', ['if', 'LPAREN', 9, 'RPAREN', 'inicioBloque', 11, 'finBloque', 19]],
 
     #Producción para else opcional
     [19, 'else', ['else', 'inicioBloque', 11, 'finBloque']],
@@ -292,37 +253,101 @@ tabla_unificada = [
     [19, 'finBloque', []],
     [19, 'eof', []],
 
-    #Producción para estructuras while
-    [10, 'while', ['while', 'LPAREN', 9, 'RPAREN', 'inicioBloque', 11, 'finBloque']],
-
-    #Producción para sentencias printf
-    [16, 'printf', ['printf', 'LPAREN', 'cadena', 20, 'RPAREN', 'finInstruccion']],
-
     #Producción para lista de argumentos en printf
     [20, 'coma', ['coma', 9]],
     [20, 'RPAREN', []],
-
-    #Producción para sentencias scanf
-    [17, 'scanf', ['scanf', 'LPAREN', 'cadena', 'coma', 'AMPERSAND', 'identificador', 21, 'RPAREN', 'finInstruccion']],
 
     #Producción para lista de variables en scanf
     [21, 'coma', ['coma', 'AMPERSAND', 'identificador', 21]],
     [21, 'RPAREN', []],
 
+    #Producción para E_add: E_mul E_add'
+    [22, 'identificador', [24, 25]],
+    [22, 'NUMBER', [24, 25]],
+    [22, 'FLOAT', [24, 25]],
+    [22, 'LPAREN', [24, 25]],
+    [22, 'char_literal', [24, 25]],
 
-    #Producción para sentencias dentro del bloque de la función
-    [11, 'int', [1, 'identificador', 2, 11]],          #Declaraciones de variables
-    [11, 'float', [1, 'identificador', 2, 11]],
-    [11, 'char', [1, 'identificador', 2, 11]],
-    [11, 'void', [1, 'identificador', 2, 11]],         #Funciones anidadas si se permite
-    [11, 'identificador', [7, 11]],                    #Asignaciones
-    [11, 'return', [15, 11]],                          #Sentencias return
-    [11, 'if', [9, 11]],                               #Estructuras if
-    [11, 'while', [10, 11]],                           #Estructuras while
-    [11, 'printf', [16, 11]],                          #Sentencias printf
-    [11, 'scanf', [17, 11]],                           #Sentencias scanf
-    [11, 'comentario', [14, 11]],                      #Comentarios
-    [11, 'comentario_bloque', [14, 11]],               #Comentarios de bloque
-    [11, 'finBloque', []],                             #Fin del bloque
-    [11, 'eof', []],                                   #Fin del archivo
+    #Producción para E_rel': ('>' | '<') E_add E_rel' | ε
+    [23, 'GREATER', ['GREATER', 22, 23]],
+    [23, 'LESS', ['LESS', 22, 23]],
+    [23, 'PLUS', []],
+    [23, 'MINUS', []],
+    [23, 'TIMES', []],
+    [23, 'DIVIDE', []],
+    [23, 'finInstruccion', []],
+    [23, 'coma', []],
+    [23, 'RPAREN', []],
+    [23, 'finBloque', []],
+
+    #Producción para E_mul: E_unary E_mul'
+    [24, 'identificador', [26, 27]],
+    [24, 'NUMBER', [26, 27]],
+    [24, 'FLOAT', [26, 27]],
+    [24, 'LPAREN', [26, 27]],
+    [24, 'char_literal', [26, 27]],
+
+    #Producción para E_add': ('+' | '-') E_mul E_add' | ε
+    [25, 'PLUS', ['PLUS', 24, 25]],
+    [25, 'MINUS', ['MINUS', 24, 25]],
+    [25, 'GREATER', []],
+    [25, 'LESS', []],
+    [25, 'finInstruccion', []],
+    [25, 'coma', []],
+    [25, 'RPAREN', []],
+    [25, 'finBloque', []],
+
+    #Producción para E_unary
+    [26, 'identificador', [28]],
+    [26, 'NUMBER', [28]],
+    [26, 'FLOAT', [28]],
+    [26, 'LPAREN', [28]],
+    [26, 'char_literal', [28]],
+
+    #Producción para E_mul': ('*' | '/') E_unary E_mul' | ε
+    [27, 'TIMES', ['TIMES', 26, 27]],
+    [27, 'DIVIDE', ['DIVIDE', 26, 27]],
+    [27, 'PLUS', []],
+    [27, 'MINUS', []],
+    [27, 'GREATER', []],
+    [27, 'LESS', []],
+    [27, 'finInstruccion', []],
+    [27, 'coma', []],
+    [27, 'RPAREN', []],
+    [27, 'finBloque', []],
+
+    #Producción para Primary
+    [28, 'identificador', ['identificador', 29]],
+    [28, 'NUMBER', ['NUMBER']],
+    [28, 'FLOAT', ['FLOAT']],
+    [28, 'LPAREN', ['LPAREN', 9, 'RPAREN']],
+    [28, 'char_literal', ['char_literal']],
+
+    [29, 'LPAREN', ['LPAREN', 30, 'RPAREN']],    # Llamada a función en una expresión
+    [29, 'PLUS', []],
+    [29, 'MINUS', []],
+    [29, 'TIMES', []],
+    [29, 'DIVIDE', []],
+    [29, 'GREATER', []],
+    [29, 'LESS', []],
+    [29, 'finInstruccion', []],
+    [29, 'coma', []],
+    [29, 'RPAREN', []],
+    [29, 'finBloque', []],
+
+    [30, 'identificador', [9, 31]],
+    [30, 'NUMBER', [9, 31]],
+    [30, 'FLOAT', [9, 31]],
+    [30, 'LPAREN', [9, 31]],
+    [30, 'char_literal', [9, 31]],
+    [30, 'RPAREN', []],  # Llamada sin argumentos
+
+
+    [31, 'coma', ['coma', 9, 31]],
+    [31, 'RPAREN', []],
+
+
+    [32, 'asignacion', ['asignacion', 9, 'finInstruccion']],        # Asignaciones
+    [32, 'LPAREN', ['LPAREN', 30, 'RPAREN', 'finInstruccion']],     # Llamadas a funciones como sentencias
+                                 
 ]
