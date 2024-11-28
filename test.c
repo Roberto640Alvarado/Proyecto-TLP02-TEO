@@ -8,7 +8,9 @@ int main() {
     return 0;
 }
 
-void funcao() {
+int c,
+
+void funcao () {
     int a = 1;
     int b = 2;
     int resultado;
