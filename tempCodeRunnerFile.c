@@ -1,5 +1,4 @@
-
-int x, z;
+int x,z;
 float y = 3.0;
 
 int main() {
@@ -11,16 +10,17 @@ int main() {
 
 int c;
 
-void funcao() {
+void funcao () {
     int a = 1;
     int b = 2;
     int resultado;
 
+printf("Hello World\n");
 
-    if (a > b) {
-        resultado == a - b;  // Corregido el operador
+if(a > b) {
+        resultado = a -+ b;
     } else {
-        resultado = a + b;  // Corregido el operador
+        resultado = a + b;
     }
 
     while (a < b) {

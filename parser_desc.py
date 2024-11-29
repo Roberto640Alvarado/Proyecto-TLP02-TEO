@@ -7,6 +7,7 @@ from terminals import *  #Tokens y reglas de expresión regular
 from non_terminals import *  #Los no terminales
 from tabulate import tabulate
 from termcolor import colored
+from analizador_semantico import AnalizadorSemantico
 
 #Clase Nodo para el Árbol Sintáctico
 class Nodo:
@@ -20,7 +21,7 @@ class Nodo:
 
     def __str__(self, nivel=0):
         resultado = "  " * nivel + str(self.valor)
-        if self.token_value:  #Mostrar el valor del token si está disponible
+        if self.token_value:  # Mostrar el valor del token si está disponible
             resultado += f" ({self.token_value})"
         resultado += "\n"
         for hijo in self.hijos:
@@ -99,100 +100,74 @@ def guardar_arbol_en_archivo(arbol, nombre_archivo):
     with open(nombre_archivo, "w") as archivo:
         archivo.write(str(arbol))
 
-#Función que realiza el análisis sintáctico
+
 def miParser(nombre_archivo):
     try:
         with open(nombre_archivo, 'r') as f:
             fuente = f.read() + '$'
 
         lexer.input(fuente)
-        lexer.lineno = 1  #Reiniciar el número de línea
+        lexer.lineno = 1  # Reiniciar el número de línea
 
-        #Obtener todos los tokens en una lista para mostrarlos en una tabla
+        # Obtener todos los tokens en una lista
         tokens = []
         tok = lexer.token()
         while tok:
             tokens.append(tok)
             tok = lexer.token()
 
-        #Imprimir los tokens
-        print("\n" + colored("<<<<<<<<<<<<<<<<< Tabla de Tokens >>>>>>>>>>>>>>>>>", "yellow", attrs=['bold']))
-        print_tokens_table(tokens)
-
-        #Reiniciar el lexer para procesar los tokens en el parser
+        # Reiniciar el lexer para procesar los tokens en el parser
         lexer.input(fuente)
-        lexer.lineno = 1  #Reiniciar el número de línea
+        lexer.lineno = 1
         tok = lexer.token()
 
-        #Nodo raíz del árbol sintáctico
-        arbol = Nodo("Programa")  #"Programa" es el no terminal inicial
-        stack = [("eof", None), (0, arbol)]  #Pila con nodos del árbol
+        # Nodo raíz del árbol sintáctico
+        arbol = Nodo("Programa")
+        stack = [("eof", None), (0, arbol)]  # Pila con nodos del árbol
 
-        #Preguntar si se desea ver el detalle del parser
-        detalleParser = input("¿Desea ver el detalle del parser? (s/n): ")
-        if detalleParser == 's':
-            detalleParser = True
-        else:
-            detalleParser = False
-
-        print("\n" + colored("<<<<<<<<<<<<<<<<< Proceso de Análisis Sintáctico >>>>>>>>>>>>>>>>>", "cyan", attrs=['bold', 'underline']))
-        print("\n")
         while True:
             if not stack:
-                print(colored("Error fatal: pila vacía.", "red"))
+                print("Error fatal: pila vacía.")
                 break
 
-            x, nodo_actual = stack.pop()  #Pop con el nodo asociado
-
-            pila_color = colored([s[0] for s in stack], "magenta")
-            #Usar lexer.lineno para obtener la línea actual
-            linea_actual = lexer.lineno if tok else -1
-
-            if detalleParser:     
-                print(f"Token actual: {colored(tok.type, 'cyan')} | Valor: {colored(tok.value, 'yellow')} | Línea: {colored(linea_actual, 'green')} | Pila: {pila_color}")
+            x, nodo_actual = stack.pop()
 
             if x == tok.type and x == 'eof':
                 print("Cadena terminada exitosamente")
-                print("\n<<<<<<<<<<<<<<<<<<<<<< Árbol Sintáctico >>>>>>>>>>>>>>>>>>>>>>>")
-                guardar_arbol_en_archivo(arbol, "Arbol_Sintactico.txt")
-                print("Árbol sintáctico guardado en 'Arbol_Sintactico.txt'")
-                break
+                # Llamar al análisis semántico después de construir el árbol
+                analizador = AnalizadorSemantico()  # Crear una instancia del analizador semántico
+                analizador.analizar(arbol)  # Analizar el árbol sintáctico
+                analizador.imprimir_errores()  # Imprimir los errores semánticos (si los hay)
+                return arbol  # Devolvemos el árbol sintáctico como un objeto
 
             elif x == tok.type and x != 'eof':
-                #Agregar el valor del token al nodo del árbol
                 nodo_actual.agregar_hijo(Nodo(tok.type, tok.value))
-                tok = lexer.token()  #Obtener el siguiente token
+                tok = lexer.token()  # Obtener el siguiente token
 
-            elif isinstance(x, int):  #No terminal
+            elif isinstance(x, int):  # No terminal
                 for nombre_tabla, tabla in tablas_ll1.items():
                     celda = buscar_en_tabla(x, tok.type, tabla)
                     if celda is not None:
-                        nombre_no_terminal = producciones_nombres.get(x, f"Producción_{x}")  #Nombre descriptivo
-                        print(colored(f"Producción encontrada: {nombre_no_terminal} -> {celda}", "blue"))
                         nuevos_hijos = []
                         for simbolo in reversed(celda):
                             if simbolo != 'vacia':
-                                hijo = Nodo(producciones_nombres.get(simbolo, simbolo))  #Uso de nombres descriptivos
+                                hijo = Nodo(producciones_nombres.get(simbolo, simbolo))
                                 nuevos_hijos.append(hijo)
-                                stack.append((simbolo, hijo))  #Agregar a la pila
-                        nodo_actual.hijos.extend(reversed(nuevos_hijos))  #Agregar los nodos hijos al árbol
+                                stack.append((simbolo, hijo))  # Agregar a la pila
+                        nodo_actual.hijos.extend(reversed(nuevos_hijos))  # Agregar los nodos hijos al árbol
                         break
                 else:
-                    #Si no se encuentra una producción válida, usar modo pánico
                     registrar_error(tok, "Producción inválida")
-                    tok = modo_panico(tok, puntos_sincronizacion, stack)  # Activar modo pánico
-                    if tok is None:  #Si no se puede recuperar, detener el análisis
+                    tok = modo_panico(tok, puntos_sincronizacion, stack)
+                    if tok is None:
                         break
 
             else:
-                #Error de no coincidencia entre pila y token actual, usar modo pánico
                 registrar_error(tok, f"Se esperaba '{x}' pero se encontró '{tok.type}'")
-                tok = modo_panico(tok, puntos_sincronizacion, stack)  # Activar modo pánico
-                if tok is None:  #Si no se puede recuperar, detener el análisis
+                tok = modo_panico(tok, puntos_sincronizacion, stack)
+                if tok is None:
                     break
 
-        #Imprimir la tabla de errores sintácticos al final
-        print_errors_table()
         return arbol if not errores_sintacticos else None
 
     except FileNotFoundError:
