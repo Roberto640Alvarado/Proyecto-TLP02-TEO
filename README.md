@@ -1,6 +1,6 @@
 # Proyecto TLP02-2024 - Compilador de C Estándar
 
-## Integrantes: 
+## Integrantes:
 
 - Albeño Ortega, Douglas Alejandro (00166120)
 - Alfaro Angel, Katerin Alexandra (00240620)
@@ -8,7 +8,8 @@
 - Arucha Aguilar, Edwin Enrique (00175420)
 - Gallardo Ayala, Raúl Antonio (00145620)
 - Iglesias Moreno, David Alejandro (00047920)
-          
+
+---
 
 ## Descripción
 
@@ -19,6 +20,13 @@ Este tipo de analizador es una herramienta fundamental en la construcción de co
 - Verificar la conformidad con las reglas sintácticas del lenguaje.
 - Gestionar errores de forma eficiente.
 
+Adicionalmente, si no se detectan errores durante el análisis sintáctico:
+- Se generará un **árbol sintáctico** que representará la estructura del código evaluado.
+- Se realizará un análisis semántico para validar la coherencia del programa.
+En caso de encontrar errores, se mostrará una tabla detallada con los errores sintácticos identificados.
+
+---
+
 ## Instalación de bibliotecas necesarias
 
 Antes de ejecutar el proyecto correctamente, es fundamental instalar las librerías necesarias:
@@ -26,50 +34,53 @@ Antes de ejecutar el proyecto correctamente, es fundamental instalar las librer�
 ### PLY (Python Lex-Yacc)  
 PLY es una herramienta muy útil que permite construir analizadores léxicos y sintácticos en Python.  
 **Comando de instalación:**  
-``` bash
+```bash
 pip install ply
 ```
-### Tabulate: 
-La biblioteca Tabulate es una solución flexible y sencilla para presentar datos en formato tabular dentro de aplicaciones de Python.
-Comando de instalación: 
+
+### Tabulate  
+La biblioteca Tabulate es una solución flexible y sencilla para presentar datos en formato tabular dentro de aplicaciones de Python.  
 **Comando de instalación:**  
-``` bash
+```bash
 pip install tabulate
 ```
-### Termcolor: 
-La biblioteca Tabulate es una solución flexible y sencilla para presentar datos en formato tabular dentro de aplicaciones de Python.
-Comando de instalación: 
+
+### Termcolor  
+Termcolor mejora la visualización de texto en terminales mediante colores y estilos.  
 **Comando de instalación:**  
-``` bash
+```bash
 pip install termcolor
 ```
 
-## Guía de uso 
-Una vez instaladas las librerías mencionadas anteriormente, se debe ejecutar el archivo “parser_desc.py” por medio del comando: 
-``` bash
+---
+
+## Guía de uso
+
+Una vez instaladas las librerías mencionadas anteriormente, se debe ejecutar el archivo “parser_desc.py” por medio del comando:  
+```bash
 python parser_desc.py
 ```
-## Funcionamiento 
-- **Tokens:**
-Una vez que se ejecuta el archivo, la consola mostrará una tabla detallada con los tokens identificados durante el análisis.
-Esta tabla proporciona información sobre los elementos léxicos encontrados en el código, facilitando la comprensión y validación del proceso.
 
-- **Opciones de detalle:**
+---
+
+## Funcionamiento
+
+### Tokens
+Al ejecutar el archivo, la consola mostrará una tabla detallada con los **tokens** identificados durante el análisis. Esta tabla proporciona información clara sobre los elementos léxicos encontrados en el código.
+
+### Opciones de detalle
 Al final de la tabla, se presentará una opción para que el usuario decida si desea visualizar el proceso del parser con un nivel de detalle más profundo o continuar sin esa información adicional.
 
-  Si acepta, se mostrará de manera detallada el proceso del parser, desglosando línea por línea la información analizada junto con los valores correspondientes.
+- Si acepta, se mostrará de manera detallada el proceso del parser, desglosando línea por línea la información analizada junto con los valores correspondientes.
+- Si rechaza, se presentará una versión más ordenada y resumida de la información, enfocándose únicamente en los aspectos esenciales del análisis.
 
-  Si rechaza, se presentará una versión más ordenada y resumida de la información, enfocándose únicamente en los aspectos esenciales del análisis.
+### Manejo de errores
+El parser utiliza un enfoque de **modo pánico**, buscando automáticamente la siguiente instrucción válida para continuar el análisis. Si encuentra errores adicionales, estos se registrarán y se mostrarán detalladamente en la salida.
 
-- **Manejo de errores:**
-Cuando el parser entra en **modo pánico**, busca automáticamente la siguiente instrucción válida para continuar con el análisis según las reglas definidas en las tablas LL(1).
+### Árbol sintáctico y análisis semántico
+- **Sin errores:**  
+  Si no se detectan errores sintácticos, se generará un **árbol sintáctico** que representará la estructura del código analizado, el cual se guardará automáticamente en un archivo de texto. Además, se realizará un análisis semántico para validar la coherencia del programa.
+  
+- **Con errores:**  
+  Si se detectan errores durante el análisis, se generará una **tabla de errores** detallando los problemas encontrados para facilitar su corrección. 
 
-  Este mecanismo permite al parser intentar recuperar la continuidad del proceso incluso después de un error.
-  Si durante esta evaluación se encuentran inconvenientes adicionales, como inconsistencias o errores, estos serán registrados y mostrados claramente en la salida con detalles específicos del problema identificado.
-
-- **Árbol sintáctico:**
-Si el análisis se realiza sin errores, se generará un **árbol sintáctico** que representará la estructura del código evaluado.
-Este árbol se guardará automáticamente en un archivo de texto para su posterior consulta.
-
-- **Reporte de errores:**
-Al final del proceso, se generará una tabla detallando los errores sintácticos encontrados durante el análisis, proporcionando información clara y precisa para facilitar su corrección.
