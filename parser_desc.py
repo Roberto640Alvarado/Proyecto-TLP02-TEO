@@ -7,6 +7,7 @@ from terminals import *  #Tokens y reglas de expresión regular
 from non_terminals import *  #Los no terminales
 from tabulate import tabulate
 from termcolor import colored
+from semantica import ejecutar_analizador
 
 #Clase Nodo para el Árbol Sintáctico
 class Nodo:
@@ -30,38 +31,38 @@ class Nodo:
 #Diccionario de nombres para producciones
 producciones_nombres = {
     0: 'Programa',
-    1: 'DeclaraciónTipo',
-    2: 'DeclaraciónResto',
-    3: 'ListaParámetros',
+    1: 'DeclaracionTipo',
+    2: 'DeclaracioResto',
+    3: 'ListaParametros',
     4: 'Bloque',
-    5: 'Asignación',
+    5: 'Asignacion',
     6: 'ListaVariables',
-    7: 'Instrucción',
-    8: 'ParámetrosExtra',
-    9: 'Expresión',
-    10: 'DeclaraciónExtra',
+    7: 'Instruccion',
+    8: 'ParametrosExtra',
+    9: 'Expresion',
+    10: 'DeclaracionExtra',
     11: 'InstruccionesBloque',
-    12: 'ExpresiónRelacional',
+    12: 'ExpresionRelacional',
     13: 'OperadorRelacional',
     14: 'Comentario',
     15: 'Return',
     16: 'Printf',
     17: 'Scanf',
-    18: 'ExpresiónReturn',
+    18: 'ExpresionReturn',
     19: 'ElseOpcional',
     20: 'ListaArgumentos',
     21: 'ListaVariablesScanf',
-    22: 'ExpresiónAdición',
-    23: 'ExpresiónRelacionalExtra',
-    24: 'ExpresiónMultiplicación',
-    25: 'ExpresiónAdiciónExtra',
-    26: 'ExpresiónUnaria',
-    27: 'ExpresiónMultiplicaciónExtra',
+    22: 'ExpresionAdicion',
+    23: 'ExpresionRelacionalExtra',
+    24: 'ExpresionMultiplicacion',
+    25: 'ExpresionAdicionExtra',
+    26: 'ExpresionUnaria',
+    27: 'ExpresionMultiplicacionExtra',
     28: 'Primaria',
-    29: 'LlamadaFunción',
+    29: 'LlamadaFuncion',
     30: 'Argumentos',
     31: 'ArgumentosExtra',
-    32: 'AsignaciónVariable'
+    32: 'AsignacionVariable'
 }
 
 #Lista de puntos de sincronización
@@ -153,9 +154,6 @@ def miParser(nombre_archivo):
 
             if x == tok.type and x == 'eof':
                 print("Cadena terminada exitosamente")
-                print("\n<<<<<<<<<<<<<<<<<<<<<< Árbol Sintáctico >>>>>>>>>>>>>>>>>>>>>>>")
-                guardar_arbol_en_archivo(arbol, "Arbol_Sintactico.txt")
-                print("Árbol sintáctico guardado en 'Arbol_Sintactico.txt'")
                 break
 
             elif x == tok.type and x != 'eof':
@@ -190,6 +188,15 @@ def miParser(nombre_archivo):
                 tok = modo_panico(tok, puntos_sincronizacion, stack)  # Activar modo pánico
                 if tok is None:  #Si no se puede recuperar, detener el análisis
                     break
+        
+        #Si errores sintactico no tiene valores imprimir arbol
+        if not errores_sintacticos:
+            print(colored("\n<<<<<<<<<<<<<<<<<<<<<< Árbol Sintáctico >>>>>>>>>>>>>>>>>>>>>>>", "cyan", attrs=["bold"]))
+            guardar_arbol_en_archivo(arbol, "Arbol_Sintactico.txt")
+            print("Árbol sintáctico guardado en 'Arbol_Sintactico.txt'")
+
+            #Ejecutar el analizador semántico
+            ejecutar_analizador('test.c')
 
         #Imprimir la tabla de errores sintácticos al final
         print_errors_table()
@@ -221,7 +228,7 @@ def print_errors_table():
         print(colored("\n<<<<<<<<<<<<<<<<< Errores Sintácticos >>>>>>>>>>>>>>>>>", "red", attrs=['bold']))
         print(colored(table, "red"))
     else:
-        print(colored("\nNo se encontraron errores sintácticos.", "green", attrs=['bold']))
+        print(colored("\n--------------------------------------------------------------", "green", attrs=['bold']))
 
 
 
